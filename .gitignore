@@ -43,3 +43,8 @@ next-env.d.ts
 
 # development notes and temporary documentation
 dev-notes/
+
+# hardhat/solidity cache and artifacts
+cache/
+artifacts/
+*.cache
