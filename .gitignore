@@ -48,3 +48,7 @@ dev-notes/
 cache/
 artifacts/
 *.cache
+
+# test files
+test-backward-compatibility.js
+type-check-backward-compatibility.ts
