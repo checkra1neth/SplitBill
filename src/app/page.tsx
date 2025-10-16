@@ -109,9 +109,9 @@ export default function Home() {
   };
 
   return (
-    <div className="retro-body" style={{ minHeight: '100vh', padding: '20px' }}>
+    <div className="retro-body" style={{ minHeight: '100vh', padding: '20px', paddingBottom: '60px' }}>
       {/* Main Window */}
-      <div className="retro-window" style={{ maxWidth: '640px', margin: '0 auto' }}>
+      <div className="retro-window" style={{ maxWidth: '640px', margin: '0 auto', width: '100%' }}>
         {/* Title Bar */}
         <div className="retro-title-bar">
           <div className="retro-title-text">

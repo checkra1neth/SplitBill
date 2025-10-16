@@ -429,3 +429,249 @@ input[type="range"].retro-slider:focus {
     transform: rotate(5deg);
   }
 }
+
+/* ============================================
+   MOBILE RESPONSIVE STYLES
+   ============================================ */
+
+/* Tablets and smaller */
+@media (max-width: 1024px) {
+  .retro-body {
+    padding: 12px !important;
+    padding-bottom: 50px !important;
+  }
+}
+
+/* Mobile devices */
+@media (max-width: 768px) {
+  .retro-body {
+    padding: 8px !important;
+    padding-bottom: 60px !important;
+  }
+
+  /* Make windows full width on mobile */
+  .retro-window {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+  }
+
+  /* Adjust title bar for mobile */
+  .retro-title-bar {
+    height: 28px;
+    padding: 4px 6px;
+  }
+
+  .retro-title-text {
+    font-size: 12px;
+    gap: 6px;
+  }
+
+  .retro-title-icon {
+    width: 18px;
+    height: 18px;
+  }
+
+  /* Larger touch targets for buttons */
+  .retro-button {
+    padding: 8px 16px;
+    font-size: 12px;
+    min-height: 36px;
+    min-width: 80px;
+  }
+
+  .retro-button:active {
+    padding: 9px 15px 7px 17px;
+  }
+
+  /* Larger inputs for mobile */
+  .retro-input {
+    padding: 8px;
+    font-size: 14px;
+    min-height: 40px;
+  }
+
+  /* Adjust content padding */
+  .retro-content {
+    padding: 12px;
+  }
+
+  /* Make tables scrollable */
+  .retro-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  /* Adjust list items for touch */
+  .retro-list-item {
+    padding: 8px;
+    font-size: 12px;
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+  }
+
+  /* Stack form elements vertically */
+  .retro-group {
+    margin-top: 12px;
+    padding: 16px 12px 12px 12px;
+  }
+
+  /* Adjust status bar */
+  .retro-status-bar {
+    font-size: 10px;
+    padding: 4px;
+  }
+
+  .retro-status-panel {
+    padding: 4px 6px;
+    font-size: 10px;
+  }
+
+  /* Taskbar adjustments */
+  .retro-taskbar {
+    height: 36px;
+    padding: 4px 6px;
+  }
+
+  .retro-start-button {
+    padding: 4px 12px;
+    font-size: 12px;
+    min-height: 32px;
+  }
+
+  /* Menu bar */
+  .retro-menu-bar {
+    padding: 4px 6px;
+  }
+
+  .retro-menu-item {
+    padding: 4px 10px;
+    font-size: 12px;
+  }
+
+  /* Control buttons */
+  .retro-control-btn {
+    width: 20px;
+    height: 18px;
+    font-size: 11px;
+  }
+
+  /* Slider adjustments */
+  input[type="range"].retro-slider {
+    height: 24px;
+    margin: 12px 0;
+  }
+
+  input[type="range"].retro-slider::-webkit-slider-track {
+    height: 10px;
+  }
+
+  input[type="range"].retro-slider::-moz-range-track {
+    height: 10px;
+  }
+
+  input[type="range"].retro-slider::-webkit-slider-thumb {
+    width: 20px;
+    height: 24px;
+  }
+
+  input[type="range"].retro-slider::-moz-range-thumb {
+    width: 20px;
+    height: 24px;
+  }
+}
+
+/* Small mobile devices */
+@media (max-width: 480px) {
+  .retro-body {
+    padding: 4px !important;
+    padding-bottom: 60px !important;
+  }
+
+  .retro-title-text {
+    font-size: 11px;
+    gap: 4px;
+  }
+
+  .retro-title-icon {
+    width: 16px;
+    height: 16px;
+  }
+
+  .retro-content {
+    padding: 8px;
+  }
+
+  .retro-button {
+    padding: 6px 12px;
+    font-size: 11px;
+    min-height: 32px;
+  }
+
+  .retro-input {
+    padding: 6px;
+    font-size: 13px;
+    min-height: 36px;
+  }
+
+  /* Hide some menu items on very small screens */
+  .retro-menu-item:nth-child(n+3) {
+    display: none;
+  }
+
+  /* Adjust table font size */
+  .retro-table th,
+  .retro-table td {
+    font-size: 10px;
+    padding: 3px;
+  }
+}
+
+/* Landscape mobile orientation */
+@media (max-width: 768px) and (orientation: landscape) {
+  .retro-body {
+    padding: 6px !important;
+    padding-bottom: 50px !important;
+  }
+
+  .retro-taskbar {
+    height: 32px;
+  }
+
+  .retro-start-button {
+    min-height: 28px;
+    padding: 3px 10px;
+  }
+}
+
+/* Modal/Dialog responsive styles */
+@media (max-width: 768px) {
+  /* Make modals full width on mobile */
+  .retro-window[style*="position: fixed"] {
+    width: calc(100% - 16px) !important;
+    max-width: calc(100% - 16px) !important;
+    left: 8px !important;
+    right: 8px !important;
+    transform: translateY(-50%) !important;
+  }
+}
+
+/* Grid layout responsive helper */
+@media (max-width: 768px) {
+  [style*="display: grid"][style*="gridTemplateColumns"] {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Flex gap fallback for older browsers */
+@supports not (gap: 16px) {
+  [style*="display: flex"][style*="gap"] > * {
+    margin-bottom: 16px;
+  }
+  
+  [style*="display: flex"][style*="gap"] > *:last-child {
+    margin-bottom: 0;
+  }
+}

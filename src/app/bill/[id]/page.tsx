@@ -276,7 +276,13 @@ export default function BillPage() {
 
   return (
     <div className="retro-body" style={{ minHeight: '100vh', padding: '20px', paddingBottom: '60px' }}>
-      <div style={{ maxWidth: '1000px', margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+      <div style={{ 
+        maxWidth: '1000px', 
+        margin: '0 auto', 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 400px), 1fr))', 
+        gap: '16px' 
+      }}>
         {/* Left Column */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {/* Add Item */}
