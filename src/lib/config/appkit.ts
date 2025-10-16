@@ -1,10 +1,9 @@
 import { createAppKit } from '@reown/appkit/react';
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
-import { SUPPORTED_CHAINS } from './chains';
 import { WALLETCONNECT_PROJECT_ID } from './wagmi';
-import { baseSepolia } from 'wagmi/chains';
+import { baseSepolia } from '@reown/appkit/networks';
 
-// Create mutable copy of chains for AppKit
+// Use AppKit's network definitions
 const appKitNetworks = [baseSepolia];
 
 // Create Wagmi Adapter
