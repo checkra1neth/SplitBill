@@ -3,7 +3,7 @@
 import { OnchainKitProvider } from '@coinbase/onchainkit';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { WagmiProvider } from 'wagmi';
-import { ReactNode, useState } from 'react';
+import { ReactNode, useState, useEffect } from 'react';
 import { wagmiConfig } from '@/lib/config/wagmi';
 import { DEFAULT_CHAIN } from '@/lib/config/chains';
 import { ToastProvider } from '@/lib/providers/ToastProvider';
@@ -19,6 +19,13 @@ export function OnchainProviders({ children }: { children: ReactNode }) {
       },
     },
   }));
+
+  // Initialize AppKit on client side
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      import('@/lib/config/appkit');
+    }
+  }, []);
 
   return (
     <WagmiProvider config={wagmiConfig}>

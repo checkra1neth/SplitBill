@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { useAccount, useEstimateGas, useConnect, useDisconnect } from 'wagmi';
+import { useAccount, useEstimateGas } from 'wagmi';
 import { ESCROW_ABI, ESCROW_CONTRACT_ADDRESS } from '@/lib/config/escrow';
 import { baseSepolia } from 'wagmi/chains';
 import { encodeFunctionData, formatEther, keccak256, toBytes, parseEther, createPublicClient, http } from 'viem';
 import { formatEthAmount, formatGwei } from '@/lib/utils/formatNumber';
+import { AppKitButton } from '@/components/AppKitButton';
 
 interface CreateBillFormRetroProps {
   onCreateBill: (title: string, creatorAddress: string, escrowEnabled: boolean) => void;
@@ -16,10 +17,7 @@ export function CreateBillFormRetro({ onCreateBill }: CreateBillFormRetroProps) 
   const [escrowEnabled, setEscrowEnabled] = useState(false);
   const [gasPrice, setGasPrice] = useState<bigint | null>(null);
   const [isLoadingGasPrice, setIsLoadingGasPrice] = useState(false);
-  const [showWalletModal, setShowWalletModal] = useState(false);
   const { address, isConnected } = useAccount();
-  const { connect, connectors } = useConnect();
-  const { disconnect } = useDisconnect();
 
   // Fetch gas price directly from RPC
   useEffect(() => {
@@ -172,37 +170,7 @@ export function CreateBillFormRetro({ onCreateBill }: CreateBillFormRetroProps) 
       {/* Wallet Status and Action */}
       <div style={{ marginBottom: '12px' }}>
         <label className="retro-label">Wallet:</label>
-        <div className="retro-status-panel" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px' }}>
-          {isConnected && address ? (
-            <>
-              <span style={{ color: 'green', fontSize: '10px' }}>
-                ✓ {address.slice(0, 6)}...{address.slice(-4)}
-              </span>
-              <button
-                type="button"
-                className="retro-button"
-                style={{ minWidth: 'auto', padding: '2px 8px', fontSize: '10px' }}
-                onClick={() => disconnect()}
-              >
-                Disconnect
-              </button>
-            </>
-          ) : (
-            <>
-              <span style={{ color: 'red', fontSize: '10px' }}>
-                ✗ Not Connected
-              </span>
-              <button
-                type="button"
-                className="retro-button"
-                style={{ minWidth: 'auto', padding: '2px 8px', fontSize: '10px' }}
-                onClick={() => setShowWalletModal(true)}
-              >
-                Connect
-              </button>
-            </>
-          )}
-        </div>
+        <AppKitButton />
       </div>
 
       <button
@@ -213,82 +181,6 @@ export function CreateBillFormRetro({ onCreateBill }: CreateBillFormRetroProps) 
       >
         Create Bill
       </button>
-
-      {/* Wallet Selection Modal */}
-      {showWalletModal && (
-        <>
-          {/* Backdrop */}
-          <div
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: 'rgba(0, 0, 0, 0.5)',
-              zIndex: 999,
-            }}
-            onClick={() => setShowWalletModal(false)}
-          />
-
-          {/* Modal Window */}
-          <div
-            className="retro-window"
-            style={{
-              position: 'fixed',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              width: '400px',
-              zIndex: 1000,
-            }}
-          >
-            <div className="retro-title-bar">
-              <div className="retro-title-text">
-                <span className="retro-title-icon">🔌</span>
-                <span>Connect Wallet</span>
-              </div>
-              <div className="retro-controls">
-                <button 
-                  className="retro-control-btn"
-                  onClick={() => setShowWalletModal(false)}
-                >
-                  ✕
-                </button>
-              </div>
-            </div>
-
-            <div className="retro-content">
-              <p style={{ marginBottom: '12px', fontSize: '11px' }}>
-                Select a wallet to connect:
-              </p>
-              <div className="retro-list" style={{ marginBottom: '12px' }}>
-                {connectors.map((connector) => (
-                  <div
-                    key={connector.uid}
-                    className="retro-list-item"
-                    onClick={() => {
-                      connect({ connector });
-                      setShowWalletModal(false);
-                    }}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    {connector.name}
-                  </div>
-                ))}
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <button
-                  className="retro-button"
-                  onClick={() => setShowWalletModal(false)}
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
     </form>
   );
 }
