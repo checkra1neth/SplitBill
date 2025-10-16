@@ -40,7 +40,7 @@ export const modal = createAppKit({
   },
   themeMode: 'light',
   themeVariables: {
-    '--w3m-z-index': '9999',
+    '--w3m-z-index': 9999,
   },
   // Allow all wallets - AppKit will detect Rabby, OKX, MetaMask automatically
   allWallets: 'SHOW',
