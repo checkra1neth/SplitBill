@@ -1,4 +1,4 @@
-import { getAddress as checksumAddress, isAddress, createPublicClient, http } from 'viem';
+import { getAddress as checksumAddress, isAddress } from 'viem';
 import type { Chain } from 'viem';
 import {
   getAddress as resolveNameToAddress,
@@ -6,7 +6,7 @@ import {
   isBasename,
 } from '@coinbase/onchainkit/identity';
 import { DEFAULT_CHAIN } from '@/lib/config/chains';
-import { baseSepolia } from 'viem/chains';
+
 
 type ParticipantIdentityResult = {
   address: string;

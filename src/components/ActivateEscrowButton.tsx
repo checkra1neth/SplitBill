@@ -5,7 +5,6 @@ import { Bill } from '@/lib/types/bill';
 import { useEscrow } from '@/features/payment/hooks/useEscrow';
 import { calculateParticipantShares } from '@/lib/utils/calculations';
 import { useToast } from '@/lib/providers/ToastProvider';
-import { useBill } from '@/features/bill/hooks/useBill';
 
 interface ActivateEscrowButtonProps {
   bill: Bill;

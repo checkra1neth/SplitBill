@@ -1,19 +1,16 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { WalletConnectMulti } from '@/components/WalletConnectMulti';
 import { CreateBillFormRetro } from '@/features/bill/components/CreateBillFormRetro';
 import { useBill } from '@/features/bill/hooks/useBill';
 import { useRouter } from 'next/navigation';
-import { ThemeToggle } from '@/components/ThemeToggle';
 import { useEscrow } from '@/features/payment/hooks/useEscrow';
 import { useToast } from '@/lib/providers/ToastProvider';
-import { calculateParticipantShares } from '@/lib/utils/calculations';
 import './retro.css';
 
 export default function Home() {
   const { createBill, updateEscrowMetadata } = useBill();
-  const { createEscrowBill, hash, isPending, isConfirming, isSuccess, error } = useEscrow();
+  const { hash, isPending, isConfirming, isSuccess, error } = useEscrow();
   const { showToast } = useToast();
   const router = useRouter();
   const [creatingBill, setCreatingBill] = useState(false);

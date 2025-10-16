@@ -9,7 +9,7 @@ import { useAccount, useConnect } from 'wagmi';
 import { resolveParticipantIdentity } from '@/features/bill/utils/resolveParticipantIdentity';
 import { DEFAULT_CHAIN } from '@/lib/config/chains';
 import { useToast } from '@/lib/providers/ToastProvider';
-import { formatEthAmount } from '@/lib/utils/formatNumber';
+
 import { EscrowPaymentButton } from '@/features/payment/components/LazyEscrowPaymentButton';
 import { useEthPrice } from '@/lib/hooks/useEthPrice';
 import { SHARE_QUERY_PARAM, buildShareableBillUrl, decodeBillFromShare } from '@/lib/utils/share';

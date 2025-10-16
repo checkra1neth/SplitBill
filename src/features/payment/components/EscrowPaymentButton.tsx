@@ -41,7 +41,7 @@ export function EscrowPaymentButton({
   const [showError, setShowError] = useState(false);
   
   // Get real-time ETH price for display only
-  const { price: ethPrice, isLoading: isPriceLoading, error: priceError } = useEthPrice();
+  const { price: ethPrice } = useEthPrice();
 
   // IMPORTANT: Read exact amount from contract (in wei)
   // This is the amount that was stored when bill was created

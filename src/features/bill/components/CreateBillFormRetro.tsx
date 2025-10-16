@@ -139,7 +139,7 @@ export function CreateBillFormRetro({ onCreateBill }: CreateBillFormRetroProps) 
               padding: 0
             }}
           >
-            What's this?
+            What&apos;s this?
           </button>
         </div>
       </div>
