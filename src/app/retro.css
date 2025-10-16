@@ -484,10 +484,11 @@ input[type="range"].retro-slider:focus {
     padding: 9px 15px 7px 17px;
   }
 
-  /* Larger inputs for mobile */
-  .retro-input {
+  /* Larger inputs for mobile - 16px prevents auto-zoom on iOS */
+  .retro-input,
+  .retro-input:focus {
     padding: 8px;
-    font-size: 14px;
+    font-size: 16px;
     min-height: 40px;
   }
 
@@ -610,9 +611,10 @@ input[type="range"].retro-slider:focus {
     min-height: 32px;
   }
 
-  .retro-input {
+  .retro-input,
+  .retro-input:focus {
     padding: 6px;
-    font-size: 13px;
+    font-size: 16px;
     min-height: 36px;
   }
 

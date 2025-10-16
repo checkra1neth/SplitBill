@@ -300,7 +300,7 @@ export default function BillPage() {
                 </div>
                 <div style={{ marginBottom: '8px' }}>
                   <label className="retro-label">Amount ($):</label>
-                  <input type="number" step="0.01" className="retro-input" style={{ width: '100%' }} value={itemAmount} onChange={(e) => setItemAmount(e.target.value)} placeholder="0.00" required />
+                  <input type="number" inputMode="decimal" step="0.01" className="retro-input" style={{ width: '100%' }} value={itemAmount} onChange={(e) => setItemAmount(e.target.value)} placeholder="0.00" required />
                 </div>
                 <button type="submit" className="retro-button" style={{ width: '100%' }}>Add Item</button>
               </form>
@@ -397,6 +397,7 @@ export default function BillPage() {
                     <label className="retro-label">Amount ($):</label>
                     <input
                       type="number"
+                      inputMode="decimal"
                       step="0.01"
                       className="retro-input"
                       style={{ width: '100%' }}
@@ -462,6 +463,7 @@ export default function BillPage() {
                     <label className="retro-label">Amount ($):</label>
                     <input
                       type="number"
+                      inputMode="decimal"
                       step="0.01"
                       className="retro-input"
                       style={{ width: '100%' }}
