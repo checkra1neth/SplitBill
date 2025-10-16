@@ -1,0 +1,420 @@
+/* Retro Windows 95 / Gas.zip inspired theme */
+
+:root {
+  --retro-bg: #008080;
+  --retro-window: #c0c0c0;
+  --retro-border-light: #ffffff;
+  --retro-border-dark: #808080;
+  --retro-border-darker: #000000;
+  --retro-title-bar: #000080;
+  --retro-title-text: #ffffff;
+  --retro-button: #c0c0c0;
+  --retro-button-hover: #dfdfdf;
+  --retro-text: #000000;
+  --retro-input: #ffffff;
+  --retro-success: #00ff00;
+  --retro-error: #ff0000;
+  --retro-warning: #ffff00;
+}
+
+.retro-body {
+  background: var(--retro-bg) !important;
+  font-family: 'MS Sans Serif', 'Microsoft Sans Serif', sans-serif !important;
+  font-size: 11px !important;
+  min-height: 100vh;
+}
+
+/* Window frame */
+.retro-window {
+  background: var(--retro-window);
+  border-top: 2px solid var(--retro-border-light);
+  border-left: 2px solid var(--retro-border-light);
+  border-right: 2px solid var(--retro-border-darker);
+  border-bottom: 2px solid var(--retro-border-darker);
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2);
+}
+
+/* Title bar */
+.retro-title-bar {
+  background: linear-gradient(90deg, #000080, #1084d0);
+  color: var(--retro-title-text);
+  padding: 2px 4px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 24px;
+}
+
+.retro-title-text {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+}
+
+.retro-title-icon {
+  width: 16px;
+  height: 16px;
+}
+
+/* Window controls */
+.retro-controls {
+  display: flex;
+  gap: 2px;
+}
+
+.retro-control-btn {
+  width: 16px;
+  height: 14px;
+  background: var(--retro-button);
+  border-top: 1px solid var(--retro-border-light);
+  border-left: 1px solid var(--retro-border-light);
+  border-right: 1px solid var(--retro-border-darker);
+  border-bottom: 1px solid var(--retro-border-darker);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.retro-control-btn:active {
+  border-top: 1px solid var(--retro-border-darker);
+  border-left: 1px solid var(--retro-border-darker);
+  border-right: 1px solid var(--retro-border-light);
+  border-bottom: 1px solid var(--retro-border-light);
+}
+
+/* Content area */
+.retro-content {
+  padding: 8px;
+  background: var(--retro-window);
+}
+
+/* Button */
+.retro-button {
+  background: var(--retro-button);
+  border-top: 2px solid var(--retro-border-light);
+  border-left: 2px solid var(--retro-border-light);
+  border-right: 2px solid var(--retro-border-darker);
+  border-bottom: 2px solid var(--retro-border-darker);
+  padding: 4px 12px;
+  font-size: 11px;
+  font-weight: normal;
+  cursor: pointer;
+  min-width: 75px;
+  text-align: center;
+}
+
+.retro-button:hover {
+  background: var(--retro-button-hover);
+}
+
+.retro-button:active {
+  border-top: 2px solid var(--retro-border-darker);
+  border-left: 2px solid var(--retro-border-darker);
+  border-right: 2px solid var(--retro-border-light);
+  border-bottom: 2px solid var(--retro-border-light);
+  padding: 5px 11px 3px 13px;
+}
+
+.retro-button:disabled {
+  color: var(--retro-border-dark);
+  cursor: not-allowed;
+}
+
+/* Input */
+.retro-input {
+  background: var(--retro-input);
+  border-top: 1px solid var(--retro-border-darker);
+  border-left: 1px solid var(--retro-border-darker);
+  border-right: 1px solid var(--retro-border-light);
+  border-bottom: 1px solid var(--retro-border-light);
+  padding: 3px 4px;
+  font-size: 11px;
+  font-family: 'MS Sans Serif', sans-serif;
+}
+
+.retro-input:focus {
+  outline: 1px dotted var(--retro-border-darker);
+  outline-offset: -2px;
+}
+
+/* Label */
+.retro-label {
+  font-size: 11px;
+  color: var(--retro-text);
+  margin-bottom: 2px;
+  display: block;
+}
+
+/* Group box */
+.retro-group {
+  border: 1px solid var(--retro-border-dark);
+  padding: 12px 8px 8px 8px;
+  position: relative;
+  margin-top: 8px;
+}
+
+.retro-group-title {
+  position: absolute;
+  top: -8px;
+  left: 8px;
+  background: var(--retro-window);
+  padding: 0 4px;
+  font-size: 11px;
+  color: var(--retro-text);
+}
+
+/* Status bar */
+.retro-status-bar {
+  background: var(--retro-window);
+  border-top: 1px solid var(--retro-border-light);
+  padding: 2px 4px;
+  font-size: 11px;
+  display: flex;
+  gap: 4px;
+}
+
+.retro-status-panel {
+  border-top: 1px solid var(--retro-border-darker);
+  border-left: 1px solid var(--retro-border-darker);
+  border-right: 1px solid var(--retro-border-light);
+  border-bottom: 1px solid var(--retro-border-light);
+  padding: 2px 4px;
+  flex: 1;
+}
+
+/* List */
+.retro-list {
+  background: var(--retro-input);
+  border-top: 1px solid var(--retro-border-darker);
+  border-left: 1px solid var(--retro-border-darker);
+  border-right: 1px solid var(--retro-border-light);
+  border-bottom: 1px solid var(--retro-border-light);
+  padding: 2px;
+}
+
+.retro-list-item {
+  padding: 2px 4px;
+  cursor: pointer;
+  font-size: 11px;
+}
+
+.retro-list-item:hover {
+  background: #000080;
+  color: #ffffff;
+}
+
+.retro-list-item.selected {
+  background: #000080;
+  color: #ffffff;
+}
+
+/* Checkbox */
+.retro-checkbox {
+  width: 13px;
+  height: 13px;
+  border: 1px solid var(--retro-border-darker);
+  background: var(--retro-input);
+  cursor: pointer;
+  appearance: none;
+  position: relative;
+}
+
+.retro-checkbox:checked::after {
+  content: '✓';
+  position: absolute;
+  top: -2px;
+  left: 1px;
+  font-size: 11px;
+  font-weight: bold;
+  color: var(--retro-text);
+}
+
+/* Table */
+.retro-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--retro-input);
+  border: 1px solid var(--retro-border-darker);
+}
+
+.retro-table th {
+  background: var(--retro-window);
+  border: 1px solid var(--retro-border-dark);
+  padding: 4px;
+  font-size: 11px;
+  font-weight: bold;
+  text-align: left;
+}
+
+.retro-table td {
+  border: 1px solid var(--retro-border-dark);
+  padding: 4px;
+  font-size: 11px;
+}
+
+.retro-table tr:hover {
+  background: #e0e0e0;
+}
+
+/* Menu bar */
+.retro-menu-bar {
+  background: var(--retro-window);
+  border-bottom: 1px solid var(--retro-border-dark);
+  padding: 2px 4px;
+  display: flex;
+  gap: 8px;
+}
+
+.retro-menu-item {
+  padding: 2px 8px;
+  cursor: pointer;
+  font-size: 11px;
+}
+
+.retro-menu-item:hover {
+  background: #000080;
+  color: #ffffff;
+}
+
+/* Taskbar */
+.retro-taskbar {
+  background: var(--retro-window);
+  border-top: 2px solid var(--retro-border-light);
+  padding: 2px 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 28px;
+}
+
+.retro-start-button {
+  background: var(--retro-button);
+  border-top: 2px solid var(--retro-border-light);
+  border-left: 2px solid var(--retro-border-light);
+  border-right: 2px solid var(--retro-border-darker);
+  border-bottom: 2px solid var(--retro-border-darker);
+  padding: 2px 8px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.retro-start-button:active {
+  border-top: 2px solid var(--retro-border-darker);
+  border-left: 2px solid var(--retro-border-darker);
+  border-right: 2px solid var(--retro-border-light);
+  border-bottom: 2px solid var(--retro-border-light);
+}
+
+/* Retro Slider (Range Input) */
+input[type="range"].retro-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 20px;
+  background: transparent;
+  cursor: pointer;
+  margin: 8px 0;
+}
+
+/* Track */
+input[type="range"].retro-slider::-webkit-slider-track {
+  width: 100%;
+  height: 8px;
+  background: #ffffff;
+  border-top: 2px solid #808080;
+  border-left: 2px solid #808080;
+  border-right: 2px solid #dfdfdf;
+  border-bottom: 2px solid #dfdfdf;
+}
+
+input[type="range"].retro-slider::-moz-range-track {
+  width: 100%;
+  height: 8px;
+  background: #ffffff;
+  border-top: 2px solid #808080;
+  border-left: 2px solid #808080;
+  border-right: 2px solid #dfdfdf;
+  border-bottom: 2px solid #dfdfdf;
+}
+
+/* Thumb (slider handle) */
+input[type="range"].retro-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 20px;
+  background: #c0c0c0;
+  border-top: 2px solid #ffffff;
+  border-left: 2px solid #ffffff;
+  border-right: 2px solid #000000;
+  border-bottom: 2px solid #000000;
+  cursor: pointer;
+  box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.3);
+}
+
+input[type="range"].retro-slider::-moz-range-thumb {
+  width: 16px;
+  height: 20px;
+  background: #c0c0c0;
+  border-top: 2px solid #ffffff;
+  border-left: 2px solid #ffffff;
+  border-right: 2px solid #000000;
+  border-bottom: 2px solid #000000;
+  cursor: pointer;
+  box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.3);
+  border-radius: 0;
+}
+
+/* Active state */
+input[type="range"].retro-slider:active::-webkit-slider-thumb {
+  border-top: 2px solid #000000;
+  border-left: 2px solid #000000;
+  border-right: 2px solid #ffffff;
+  border-bottom: 2px solid #ffffff;
+}
+
+input[type="range"].retro-slider:active::-moz-range-thumb {
+  border-top: 2px solid #000000;
+  border-left: 2px solid #000000;
+  border-right: 2px solid #ffffff;
+  border-bottom: 2px solid #ffffff;
+}
+
+/* Focus state */
+input[type="range"].retro-slider:focus {
+  outline: 1px dotted #000000;
+  outline-offset: 2px;
+}
+
+/* Pulse animation for completed bills */
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.02);
+    opacity: 0.95;
+  }
+}
+
+/* Celebration animation */
+@keyframes celebrate {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-5deg);
+  }
+  75% {
+    transform: rotate(5deg);
+  }
+}

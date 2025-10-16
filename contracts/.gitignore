@@ -1,0 +1,28 @@
+# Foundry artifacts
+out/
+cache/
+broadcast/
+
+# Deployment artifacts (contains contract addresses)
+deployment.json
+
+# Private keys and secrets
+.env
+*.key
+*.pem
+
+# Node modules (if using Hardhat)
+node_modules/
+
+# Build artifacts
+artifacts/
+typechain/
+typechain-types/
+
+# Coverage reports
+coverage/
+coverage.json
+
+# Gas reports
+.gas-snapshot
+gas-report.txt

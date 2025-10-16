@@ -1,0 +1,10 @@
+{
+  "network": "Base Sepolia",
+  "chainId": 84532,
+  "contractAddress": "0x0000000000000000000000000000000000000000",
+  "transactionHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "deployerAddress": "0x0000000000000000000000000000000000000000",
+  "timestamp": "2025-01-15T00:00:00Z",
+  "explorerUrl": "https://sepolia.basescan.org/address/0x0000000000000000000000000000000000000000",
+  "notes": "This file is created automatically by deploy.sh after successful deployment"
+}
