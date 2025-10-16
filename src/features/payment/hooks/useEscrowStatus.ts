@@ -82,6 +82,38 @@ export function useEscrowStatus(escrowBillId?: string) {
     },
   });
 
+  // Watch for BillCancelled events
+  useWatchContractEvent({
+    address: ESCROW_CONTRACT_ADDRESS,
+    abi: ESCROW_ABI,
+    eventName: 'BillCancelled',
+    onLogs: (logs) => {
+      const relevantLog = logs.find(
+        (log) => log.args.billId === escrowBillId,
+      );
+      if (relevantLog) {
+        setLastUpdate(Date.now());
+        refetch();
+      }
+    },
+  });
+
+  // Watch for PartialSettlement events
+  useWatchContractEvent({
+    address: ESCROW_CONTRACT_ADDRESS,
+    abi: ESCROW_ABI,
+    eventName: 'PartialSettlement',
+    onLogs: (logs) => {
+      const relevantLog = logs.find(
+        (log) => log.args.billId === escrowBillId,
+      );
+      if (relevantLog) {
+        setLastUpdate(Date.now());
+        refetch();
+      }
+    },
+  });
+
   // Format contract data into EscrowStatus interface
   const escrowStatus: EscrowStatus | null = data
     ? {
@@ -90,6 +122,8 @@ export function useEscrowStatus(escrowBillId?: string) {
         participantCount: Number(data[2]),
         paidCount: Number(data[3]),
         settled: data[4],
+        cancelled: data[5],
+        deadline: Number(data[6]),
       }
     : null;
 

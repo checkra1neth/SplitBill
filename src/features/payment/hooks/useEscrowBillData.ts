@@ -50,3 +50,59 @@ export function useEscrowPaymentStatus(escrowBillId: string, participantAddress?
     refetch,
   };
 }
+
+/**
+ * Hook to get bill status information (cancelled, settled, etc.)
+ */
+export function useEscrowBillInfo(escrowBillId: string) {
+  const { data, isLoading, error, refetch } = useReadContract({
+    address: ESCROW_CONTRACT_ADDRESS,
+    abi: ESCROW_ABI,
+    functionName: 'getBillInfo',
+    args: [escrowBillId as `0x${string}`],
+    chainId: baseSepolia.id,
+    query: {
+      enabled: !!escrowBillId,
+      refetchInterval: 5000, // Refetch every 5 seconds to update status
+    },
+  });
+
+  const billInfo = data as [string, bigint, bigint, bigint, boolean, boolean, bigint] | undefined;
+
+  return {
+    creator: billInfo?.[0] as string | undefined,
+    totalAmount: billInfo?.[1] as bigint | undefined,
+    participantCount: billInfo?.[2] ? Number(billInfo[2]) : undefined,
+    paidCount: billInfo?.[3] ? Number(billInfo[3]) : undefined,
+    settled: billInfo?.[4] as boolean | undefined,
+    cancelled: billInfo?.[5] as boolean | undefined,
+    deadline: billInfo?.[6] as bigint | undefined,
+    isLoading,
+    error,
+    refetch,
+  };
+}
+
+/**
+ * Hook to check if participant can claim refund
+ */
+export function useCanRefund(escrowBillId: string, participantAddress?: `0x${string}`) {
+  const { data: canRefund, isLoading, error, refetch } = useReadContract({
+    address: ESCROW_CONTRACT_ADDRESS,
+    abi: ESCROW_ABI,
+    functionName: 'canRefund',
+    args: [escrowBillId as `0x${string}`, participantAddress!],
+    chainId: baseSepolia.id,
+    query: {
+      enabled: !!escrowBillId && !!participantAddress,
+      refetchInterval: 5000,
+    },
+  });
+
+  return {
+    canRefund: canRefund as boolean | undefined,
+    isLoading,
+    error,
+    refetch,
+  };
+}

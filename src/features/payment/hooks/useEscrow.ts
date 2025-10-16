@@ -213,9 +213,109 @@ export function useEscrow() {
   // Parse write errors when they occur
   const error = writeError ? parseContractError(writeError) : parsedError;
 
+  /**
+   * Cancel bill and refund all participants (creator only)
+   * @param escrowBillId - The bytes32 bill ID in the contract
+   */
+  const cancelAndRefund = async (escrowBillId: string): Promise<void> => {
+    try {
+      setParsedError(null);
+      validateWalletConnection(address);
+      await ensureCorrectNetwork();
+
+      writeContract({
+        address: ESCROW_CONTRACT_ADDRESS,
+        abi: ESCROW_ABI,
+        functionName: 'cancelAndRefund',
+        args: [escrowBillId as `0x${string}`],
+        chainId: baseSepolia.id,
+      });
+    } catch (error) {
+      handleEscrowError(error);
+      throw error;
+    }
+  };
+
+  /**
+   * Trigger auto-refund if bill is expired
+   * @param escrowBillId - The bytes32 bill ID in the contract
+   */
+  const autoRefundIfExpired = async (escrowBillId: string): Promise<void> => {
+    try {
+      setParsedError(null);
+      validateWalletConnection(address);
+      await ensureCorrectNetwork();
+
+      writeContract({
+        address: ESCROW_CONTRACT_ADDRESS,
+        abi: ESCROW_ABI,
+        functionName: 'autoRefundIfExpired',
+        args: [escrowBillId as `0x${string}`],
+        chainId: baseSepolia.id,
+      });
+    } catch (error) {
+      handleEscrowError(error);
+      throw error;
+    }
+  };
+
+  /**
+   * Partial settlement - settle with only those who paid (creator only)
+   * @param escrowBillId - The bytes32 bill ID in the contract
+   */
+  const partialSettle = async (escrowBillId: string): Promise<void> => {
+    try {
+      setParsedError(null);
+      validateWalletConnection(address);
+      await ensureCorrectNetwork();
+
+      writeContract({
+        address: ESCROW_CONTRACT_ADDRESS,
+        abi: ESCROW_ABI,
+        functionName: 'partialSettle',
+        args: [escrowBillId as `0x${string}`],
+        chainId: baseSepolia.id,
+      });
+    } catch (error) {
+      handleEscrowError(error);
+      throw error;
+    }
+  };
+
+  /**
+   * Refund a specific participant after cancellation
+   * @param escrowBillId - The bytes32 bill ID in the contract
+   * @param participantAddress - Address of participant to refund
+   */
+  const refundParticipant = async (
+    escrowBillId: string,
+    participantAddress: string,
+  ): Promise<void> => {
+    try {
+      setParsedError(null);
+      validateWalletConnection(address);
+      await ensureCorrectNetwork();
+
+      writeContract({
+        address: ESCROW_CONTRACT_ADDRESS,
+        abi: ESCROW_ABI,
+        functionName: 'refundParticipant',
+        args: [escrowBillId as `0x${string}`, participantAddress as `0x${string}`],
+        chainId: baseSepolia.id,
+      });
+    } catch (error) {
+      handleEscrowError(error);
+      throw error;
+    }
+  };
+
   return {
     createEscrowBill,
     payEscrowShare,
+    cancelAndRefund,
+    autoRefundIfExpired,
+    partialSettle,
+    refundParticipant,
     isPending,
     isConfirming,
     isSuccess,

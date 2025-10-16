@@ -21,6 +21,10 @@ import { isMetadataRegistryConfigured } from '@/lib/config/metadata';
 import { ActivateEscrowButton } from '@/components/ActivateEscrowButton';
 import { ParticipantPaymentStatus } from '@/features/bill/components/ParticipantPaymentStatus';
 import { EscrowPaymentProgress } from '@/features/bill/components/EscrowPaymentProgress';
+import { EscrowManagementPanel } from '@/features/bill/components/EscrowManagementPanel';
+import { EscrowDeadlineDisplay } from '@/features/bill/components/EscrowDeadlineDisplay';
+import { RefundClaimButton } from '@/features/payment/components/RefundClaimButton';
+import { useEscrowBillInfo } from '@/features/payment/hooks/useEscrowBillData';
 import QRCode from 'react-qr-code';
 import { RetroConfirmDialog } from '@/components/RetroConfirmDialog';
 
@@ -59,6 +63,9 @@ export default function BillPage() {
     participantName: string;
   }>({ isOpen: false, participantId: '', participantName: '' });
   const [isBillComplete, setIsBillComplete] = useState(false);
+  
+  // Get bill status from contract
+  const { cancelled, settled } = useEscrowBillInfo(bill?.escrowBillId || '');
 
   useEffect(() => {
     if (hasProcessedShareLink) return;
@@ -473,7 +480,9 @@ export default function BillPage() {
           <div className="retro-window">
             <div className="retro-title-bar">
               <div className="retro-title-text">
-                <span>{isBillComplete ? '✅' : '📋'} {bill.title}</span>
+                <span>
+                  {cancelled ? '❌' : isBillComplete || settled ? '✅' : '📋'} {bill.title}
+                </span>
               </div>
               <div className="retro-controls">
                 <button className="retro-control-btn" onClick={() => router.push('/')}>✕</button>
@@ -484,31 +493,65 @@ export default function BillPage() {
               {bill.escrowEnabled && (
                 <div style={{ marginBottom: '12px' }}>
                   {bill.escrowBillId ? (
-                    <div style={{ 
-                      background: isBillComplete ? '#e0ffe0' : '#ffffff',
-                      border: isBillComplete ? '2px solid #00ff00' : '1px solid #808080',
-                      padding: '8px',
-                      fontSize: '11px'
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-                        <span style={{ fontSize: '14px' }}>{isBillComplete ? '🎉' : '🔒'}</span>
-                        <strong>{isBillComplete ? 'Bill Complete!' : 'Escrow Protection Active'}</strong>
+                    <>
+                      <div style={{ 
+                        background: cancelled ? '#ffe0e0' : (isBillComplete || settled) ? '#e0ffe0' : '#ffffff',
+                        border: cancelled ? '2px solid #ff0000' : (isBillComplete || settled) ? '2px solid #00ff00' : '1px solid #808080',
+                        padding: '8px',
+                        fontSize: '11px',
+                        marginBottom: '12px'
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                          <span style={{ fontSize: '14px' }}>
+                            {cancelled ? '❌' : (isBillComplete || settled) ? '🎉' : '🔒'}
+                          </span>
+                          <strong>
+                            {cancelled 
+                              ? 'Bill Cancelled - Refunds Available' 
+                              : (isBillComplete || settled) 
+                                ? 'Bill Complete!' 
+                                : 'Escrow Protection Active'
+                            }
+                          </strong>
+                        </div>
+                        <div style={{ fontSize: '10px', color: '#666', marginBottom: '4px' }}>
+                          {cancelled
+                            ? 'Bill has been cancelled. Participants who paid can claim refunds below.'
+                            : (isBillComplete || settled)
+                              ? 'All funds collected and transferred to bill creator.'
+                              : 'Funds secured in smart contract until all participants pay.'
+                          }
+                        </div>
+                        <div style={{ fontSize: '10px', color: '#0000ff', marginBottom: '6px' }}>
+                          Bill ID: {bill.escrowBillId.slice(0, 10)}...{bill.escrowBillId.slice(-8)}
+                        </div>
+                        <EscrowPaymentProgress
+                          escrowBillId={bill.escrowBillId}
+                          participants={bill.participants}
+                          onAllPaid={() => setIsBillComplete(true)}
+                        />
                       </div>
-                      <div style={{ fontSize: '10px', color: '#666', marginBottom: '4px' }}>
-                        {isBillComplete 
-                          ? 'All funds collected and transferred to bill creator.'
-                          : 'Funds secured in smart contract until all participants pay.'
-                        }
+                      
+                      {/* Deadline Display */}
+                      <div style={{ marginBottom: '12px' }}>
+                        <EscrowDeadlineDisplay escrowBillId={bill.escrowBillId} />
                       </div>
-                      <div style={{ fontSize: '10px', color: '#0000ff', marginBottom: '6px' }}>
-                        Bill ID: {bill.escrowBillId.slice(0, 10)}...{bill.escrowBillId.slice(-8)}
+                      
+                      {/* Refund Claim Button (for participants) */}
+                      {address && (
+                        <div style={{ marginBottom: '12px' }}>
+                          <RefundClaimButton escrowBillId={bill.escrowBillId} />
+                        </div>
+                      )}
+                      
+                      {/* Management Panel (for creator) */}
+                      <div style={{ marginBottom: '12px' }}>
+                        <EscrowManagementPanel
+                          escrowBillId={bill.escrowBillId}
+                          creatorAddress={bill.createdBy}
+                        />
                       </div>
-                      <EscrowPaymentProgress
-                        escrowBillId={bill.escrowBillId}
-                        participants={bill.participants}
-                        onAllPaid={() => setIsBillComplete(true)}
-                      />
-                    </div>
+                    </>
                   ) : (
                     <div style={{ 
                       background: '#ffff00',
@@ -653,7 +696,7 @@ export default function BillPage() {
               </div>
 
               {/* Payment Section */}
-              {isWrongNetwork && address && (
+              {isWrongNetwork && address && !cancelled && (
                 <div style={{ background: '#ffff00', border: '2px solid #ff0000', padding: '8px', marginBottom: '12px', fontSize: '11px', textAlign: 'center' }}>
                   ⚠️ Wrong Network: {currentChain?.name || 'Unknown'}
                   <br />
@@ -661,7 +704,8 @@ export default function BillPage() {
                 </div>
               )}
 
-              {address && !isWrongNetwork && myShare && myShare.amount > 0 && (
+              {/* Show payment button only if bill is not cancelled and not complete */}
+              {address && !isWrongNetwork && !cancelled && !isBillComplete && !settled && myShare && myShare.amount > 0 && (
                 <>
                   {bill.escrowEnabled && bill.escrowBillId ? (
                     <div>
@@ -691,14 +735,14 @@ export default function BillPage() {
                 </>
               )}
 
-              {address && !isWrongNetwork && (!myShare || myShare.amount <= 0) && !isBillComplete && (
+              {address && !isWrongNetwork && !cancelled && (!myShare || myShare.amount <= 0) && !isBillComplete && !settled && (
                 <div style={{ background: '#ffffff', border: '1px solid #808080', padding: '8px', fontSize: '11px', textAlign: 'center', color: '#666' }}>
                   ℹ️ You have no outstanding balance
                 </div>
               )}
 
-              {/* Bill Complete Actions */}
-              {isBillComplete && (
+              {/* Bill Complete or Cancelled Actions */}
+              {(isBillComplete || settled || cancelled) && (
                 <button 
                   onClick={() => router.push('/')}
                   className="retro-button" 

@@ -46,4 +46,6 @@ export interface EscrowStatus {
   participantCount: number;
   paidCount: number;
   settled: boolean;
+  cancelled: boolean;
+  deadline: number; // Unix timestamp
 }

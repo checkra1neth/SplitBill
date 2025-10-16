@@ -37,3 +37,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# kiro files
+.kiro/
+
+# development notes and temporary documentation
+dev-notes/

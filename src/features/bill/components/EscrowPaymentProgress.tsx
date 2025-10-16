@@ -1,6 +1,6 @@
 'use client';
 
-import { useEscrowPaymentStatus } from '@/features/payment/hooks/useEscrowBillData';
+import { useEscrowPaymentStatus, useEscrowBillInfo } from '@/features/payment/hooks/useEscrowBillData';
 import { useEffect, useRef } from 'react';
 import { useToast } from '@/lib/providers/ToastProvider';
 
@@ -17,6 +17,7 @@ export function EscrowPaymentProgress({
 }: EscrowPaymentProgressProps) {
   const { showToast } = useToast();
   const hasNotifiedRef = useRef(false);
+  const { cancelled, settled } = useEscrowBillInfo(escrowBillId);
   
   // Get payment status for all participants
   const paymentStatuses = participants.map((p) => {
@@ -53,6 +54,21 @@ export function EscrowPaymentProgress({
     );
   }
 
+  // Determine status message and color based on bill state
+  let statusMessage = `${paidCount} / ${totalCount} paid`;
+  let statusColor = '#ff8800';
+  let progressColor = '#0000ff';
+
+  if (cancelled) {
+    statusMessage = '✗ Cancelled - Refunds Available';
+    statusColor = '#ff0000';
+    progressColor = '#ff0000';
+  } else if (settled || allPaid) {
+    statusMessage = '✓ Complete';
+    statusColor = '#00ff00';
+    progressColor = '#00ff00';
+  }
+
   return (
     <div style={{ marginTop: '6px' }}>
       <div
@@ -65,8 +81,8 @@ export function EscrowPaymentProgress({
         }}
       >
         <span style={{ fontWeight: 'bold' }}>Payment Status:</span>
-        <span style={{ color: allPaid ? '#00ff00' : '#ff8800', fontWeight: 'bold' }}>
-          {allPaid ? '✓ Complete' : `${paidCount} / ${totalCount} paid`}
+        <span style={{ color: statusColor, fontWeight: 'bold' }}>
+          {statusMessage}
         </span>
       </div>
       {/* Progress bar */}
@@ -80,9 +96,9 @@ export function EscrowPaymentProgress({
       >
         <div
           style={{
-            background: allPaid ? '#00ff00' : '#0000ff',
+            background: progressColor,
             height: '100%',
-            width: `${(paidCount / totalCount) * 100}%`,
+            width: cancelled ? '100%' : `${(paidCount / totalCount) * 100}%`,
             transition: 'width 0.3s ease',
           }}
         />

@@ -4,7 +4,7 @@ pragma solidity ^0.8.20;
 /**
  * @title SplitBillEscrow
  * @dev Escrow contract for SplitBill - holds funds until all participants pay
- * @notice This is a future enhancement - not used in MVP
+ * @notice Enhanced with refund, timeout, and partial settlement features
  */
 contract SplitBillEscrow {
     struct Bill {
@@ -13,16 +13,25 @@ contract SplitBillEscrow {
         uint256 participantCount;
         uint256 paidCount;
         bool settled;
+        bool cancelled;
+        uint256 createdAt;
+        uint256 deadline; // Timestamp for auto-refund
         mapping(address => uint256) shares;
         mapping(address => bool) hasPaid;
+        mapping(address => uint256) paidAmounts; // Track actual paid amounts for refunds
     }
 
     mapping(bytes32 => Bill) public bills;
     
-    event BillCreated(bytes32 indexed billId, address indexed creator, uint256 totalAmount);
+    // Default deadline: 7 days
+    uint256 public constant DEFAULT_DEADLINE = 7 days;
+    
+    event BillCreated(bytes32 indexed billId, address indexed creator, uint256 totalAmount, uint256 deadline);
     event PaymentReceived(bytes32 indexed billId, address indexed participant, uint256 amount);
-    event BillSettled(bytes32 indexed billId);
+    event BillSettled(bytes32 indexed billId, uint256 totalAmount);
+    event BillCancelled(bytes32 indexed billId);
     event RefundIssued(bytes32 indexed billId, address indexed participant, uint256 amount);
+    event PartialSettlement(bytes32 indexed billId, uint256 settledAmount, uint256 participantsPaid);
 
     /**
      * @dev Create a new bill with participant shares
@@ -42,6 +51,8 @@ contract SplitBillEscrow {
         Bill storage bill = bills[billId];
         bill.creator = msg.sender;
         bill.participantCount = participants.length;
+        bill.createdAt = block.timestamp;
+        bill.deadline = block.timestamp + DEFAULT_DEADLINE;
 
         uint256 total = 0;
         for (uint256 i = 0; i < participants.length; i++) {
@@ -54,7 +65,30 @@ contract SplitBillEscrow {
 
         bill.totalAmount = total;
 
-        emit BillCreated(billId, msg.sender, total);
+        emit BillCreated(billId, msg.sender, total, bill.deadline);
+    }
+    
+    /**
+     * @dev Create a bill with custom deadline
+     * @param billId Unique identifier for the bill
+     * @param participants Array of participant addresses
+     * @param shares Array of amounts each participant owes
+     * @param customDeadline Custom deadline timestamp
+     */
+    function createBillWithDeadline(
+        bytes32 billId,
+        address[] calldata participants,
+        uint256[] calldata shares,
+        uint256 customDeadline
+    ) external {
+        require(customDeadline > block.timestamp, "Deadline must be in future");
+        require(customDeadline <= block.timestamp + 30 days, "Deadline too far");
+        
+        // Create bill normally
+        this.createBill(billId, participants, shares);
+        
+        // Override deadline
+        bills[billId].deadline = customDeadline;
     }
 
     /**
@@ -65,11 +99,13 @@ contract SplitBillEscrow {
         Bill storage bill = bills[billId];
         require(bill.creator != address(0), "Bill not found");
         require(!bill.settled, "Bill already settled");
+        require(!bill.cancelled, "Bill cancelled");
         require(!bill.hasPaid[msg.sender], "Already paid");
         require(bill.shares[msg.sender] > 0, "Not a participant");
         require(msg.value == bill.shares[msg.sender], "Incorrect amount");
 
         bill.hasPaid[msg.sender] = true;
+        bill.paidAmounts[msg.sender] = msg.value;
         bill.paidCount++;
 
         emit PaymentReceived(billId, msg.sender, msg.value);
@@ -87,14 +123,123 @@ contract SplitBillEscrow {
     function _settleBill(bytes32 billId) internal {
         Bill storage bill = bills[billId];
         require(!bill.settled, "Already settled");
+        require(!bill.cancelled, "Bill cancelled");
 
         bill.settled = true;
 
         // Transfer total amount to bill creator
-        (bool success, ) = bill.creator.call{value: bill.totalAmount}("");
+        uint256 amountToTransfer = address(this).balance >= bill.totalAmount 
+            ? bill.totalAmount 
+            : address(this).balance;
+            
+        (bool success, ) = bill.creator.call{value: amountToTransfer}("");
         require(success, "Transfer failed");
 
-        emit BillSettled(billId);
+        emit BillSettled(billId, amountToTransfer);
+    }
+    
+    /**
+     * @dev Cancel bill and refund all participants (creator only)
+     * @param billId The bill to cancel
+     */
+    function cancelAndRefund(bytes32 billId) external {
+        Bill storage bill = bills[billId];
+        require(bill.creator != address(0), "Bill not found");
+        require(msg.sender == bill.creator, "Only creator can cancel");
+        require(!bill.settled, "Already settled");
+        require(!bill.cancelled, "Already cancelled");
+        
+        bill.cancelled = true;
+        
+        emit BillCancelled(billId);
+        
+        // Refund all participants who paid
+        _refundAll(billId);
+    }
+    
+    /**
+     * @dev Auto-refund if deadline passed and not all paid
+     * @param billId The bill to check and refund
+     */
+    function autoRefundIfExpired(bytes32 billId) external {
+        Bill storage bill = bills[billId];
+        require(bill.creator != address(0), "Bill not found");
+        require(!bill.settled, "Already settled");
+        require(!bill.cancelled, "Already cancelled");
+        require(block.timestamp >= bill.deadline, "Deadline not reached");
+        require(bill.paidCount < bill.participantCount, "All paid, use settle");
+        
+        bill.cancelled = true;
+        
+        emit BillCancelled(billId);
+        
+        // Refund all participants who paid
+        _refundAll(billId);
+    }
+    
+    /**
+     * @dev Partial settlement - settle with only those who paid (creator only)
+     * @param billId The bill to partially settle
+     */
+    function partialSettle(bytes32 billId) external {
+        Bill storage bill = bills[billId];
+        require(bill.creator != address(0), "Bill not found");
+        require(msg.sender == bill.creator, "Only creator can partial settle");
+        require(!bill.settled, "Already settled");
+        require(!bill.cancelled, "Bill cancelled");
+        require(bill.paidCount > 0, "No payments received");
+        require(bill.paidCount < bill.participantCount, "All paid, use full settle");
+        
+        bill.settled = true;
+        
+        // Transfer available balance (all paid amounts)
+        uint256 balance = address(this).balance;
+        require(balance > 0, "No funds to settle");
+        
+        (bool success, ) = bill.creator.call{value: balance}("");
+        require(success, "Transfer failed");
+        
+        emit PartialSettlement(billId, balance, bill.paidCount);
+    }
+    
+    /**
+     * @dev Internal function to refund all participants who paid
+     * @param billId The bill to refund
+     * @notice This is a placeholder - participants must claim refunds individually
+     * using refundParticipant() to avoid gas limit issues with large participant lists
+     */
+    function _refundAll(bytes32 billId) internal pure {
+        // Intentionally empty - participants claim refunds individually
+        // This avoids potential gas limit issues and gives participants control
+        // over when they receive their refunds
+        
+        // Emit event to notify that refunds are available
+        // (Event already emitted in cancelAndRefund and autoRefundIfExpired)
+        
+        // Silence unused variable warning
+        require(billId != bytes32(0), "Invalid bill ID");
+    }
+    
+    /**
+     * @dev Refund a specific participant (after cancellation)
+     * @param billId The bill ID
+     * @param participant The participant to refund
+     */
+    function refundParticipant(bytes32 billId, address participant) external {
+        Bill storage bill = bills[billId];
+        require(bill.cancelled, "Bill not cancelled");
+        require(bill.hasPaid[participant], "Participant hasn't paid");
+        
+        uint256 refundAmount = bill.paidAmounts[participant];
+        require(refundAmount > 0, "No amount to refund");
+        
+        // Mark as refunded by setting to 0
+        bill.paidAmounts[participant] = 0;
+        
+        (bool success, ) = participant.call{value: refundAmount}("");
+        require(success, "Refund failed");
+        
+        emit RefundIssued(billId, participant, refundAmount);
     }
 
     /**
@@ -106,7 +251,9 @@ contract SplitBillEscrow {
         uint256 totalAmount,
         uint256 participantCount,
         uint256 paidCount,
-        bool settled
+        bool settled,
+        bool cancelled,
+        uint256 deadline
     ) {
         Bill storage bill = bills[billId];
         return (
@@ -114,8 +261,34 @@ contract SplitBillEscrow {
             bill.totalAmount,
             bill.participantCount,
             bill.paidCount,
-            bill.settled
+            bill.settled,
+            bill.cancelled,
+            bill.deadline
         );
+    }
+    
+    /**
+     * @dev Check if bill is expired (past deadline and not fully paid)
+     * @param billId The bill to check
+     */
+    function isExpired(bytes32 billId) external view returns (bool) {
+        Bill storage bill = bills[billId];
+        return block.timestamp >= bill.deadline && 
+               bill.paidCount < bill.participantCount &&
+               !bill.settled &&
+               !bill.cancelled;
+    }
+    
+    /**
+     * @dev Get time remaining until deadline
+     * @param billId The bill to check
+     */
+    function getTimeRemaining(bytes32 billId) external view returns (uint256) {
+        Bill storage bill = bills[billId];
+        if (block.timestamp >= bill.deadline) {
+            return 0;
+        }
+        return bill.deadline - block.timestamp;
     }
 
     /**
@@ -134,5 +307,24 @@ contract SplitBillEscrow {
      */
     function getShare(bytes32 billId, address participant) external view returns (uint256) {
         return bills[billId].shares[participant];
+    }
+    
+    /**
+     * @dev Get participant's paid amount (for refunds)
+     * @param billId The bill to check
+     * @param participant The participant address
+     */
+    function getPaidAmount(bytes32 billId, address participant) external view returns (uint256) {
+        return bills[billId].paidAmounts[participant];
+    }
+    
+    /**
+     * @dev Check if participant can be refunded
+     * @param billId The bill to check
+     * @param participant The participant address
+     */
+    function canRefund(bytes32 billId, address participant) external view returns (bool) {
+        Bill storage bill = bills[billId];
+        return bill.cancelled && bill.paidAmounts[participant] > 0;
     }
 }

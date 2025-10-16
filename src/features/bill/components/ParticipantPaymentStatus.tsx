@@ -1,6 +1,6 @@
 'use client';
 
-import { useEscrowPaymentStatus } from '@/features/payment/hooks/useEscrowBillData';
+import { useEscrowPaymentStatus, useEscrowBillInfo, useCanRefund } from '@/features/payment/hooks/useEscrowBillData';
 
 interface ParticipantPaymentStatusProps {
   escrowBillId: string;
@@ -19,6 +19,44 @@ export function ParticipantPaymentStatus({
     escrowBillId,
     participantAddress as `0x${string}`
   );
+  const { cancelled, settled } = useEscrowBillInfo(escrowBillId);
+  const { canRefund } = useCanRefund(escrowBillId, participantAddress as `0x${string}`);
+
+  // Determine status label and color
+  let statusLabel = 'UNPAID';
+  let statusBg = '#ff0000';
+  let icon = '✗';
+  let iconColor = '#ff0000';
+
+  if (isLoading) {
+    icon = '⏳';
+    iconColor = '#666';
+  } else if (cancelled && canRefund) {
+    statusLabel = 'REFUND';
+    statusBg = '#ff8800';
+    icon = '↩';
+    iconColor = '#ff8800';
+  } else if (cancelled && hasPaid) {
+    statusLabel = 'REFUNDED';
+    statusBg = '#808080';
+    icon = '✓';
+    iconColor = '#808080';
+  } else if (cancelled) {
+    statusLabel = 'CANCELLED';
+    statusBg = '#808080';
+    icon = '✗';
+    iconColor = '#808080';
+  } else if (settled && hasPaid) {
+    statusLabel = 'PAID';
+    statusBg = '#00ff00';
+    icon = '✓';
+    iconColor = '#00ff00';
+  } else if (hasPaid) {
+    statusLabel = 'PAID';
+    statusBg = '#00ff00';
+    icon = '✓';
+    iconColor = '#00ff00';
+  }
 
   return (
     <div
@@ -30,13 +68,9 @@ export function ParticipantPaymentStatus({
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: 1 }}>
-        {isLoading ? (
-          <span style={{ fontSize: '10px' }}>⏳</span>
-        ) : hasPaid ? (
-          <span style={{ color: '#00ff00', fontWeight: 'bold' }}>✓</span>
-        ) : (
-          <span style={{ color: '#ff0000', fontWeight: 'bold' }}>✗</span>
-        )}
+        <span style={{ color: iconColor, fontWeight: 'bold', fontSize: '12px' }}>
+          {icon}
+        </span>
         <span>{participantName}</span>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -46,12 +80,12 @@ export function ParticipantPaymentStatus({
             style={{
               fontSize: '9px',
               padding: '2px 4px',
-              background: hasPaid ? '#00ff00' : '#ff0000',
+              background: statusBg,
               color: '#000000',
               fontWeight: 'bold',
             }}
           >
-            {hasPaid ? 'PAID' : 'UNPAID'}
+            {statusLabel}
           </span>
         )}
       </div>
