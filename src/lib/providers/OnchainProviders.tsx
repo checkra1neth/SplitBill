@@ -23,7 +23,10 @@ export function OnchainProviders({ children }: { children: ReactNode }) {
   // Initialize AppKit on client side
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      import('@/lib/config/appkit');
+      import('@/lib/config/appkit').then((module) => {
+        // Expose appkit globally for easy access
+        (window as Window & { appkit?: typeof module.appkit }).appkit = module.appkit;
+      });
     }
   }, []);
 

@@ -3,20 +3,17 @@ import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
 import { WALLETCONNECT_PROJECT_ID } from './wagmi';
 import { baseSepolia } from '@reown/appkit/networks';
 
-// Use AppKit's network definitions
-const appKitNetworks = [baseSepolia];
-
 // Create Wagmi Adapter
 export const wagmiAdapter = new WagmiAdapter({
   projectId: WALLETCONNECT_PROJECT_ID,
-  networks: appKitNetworks,
+  networks: [baseSepolia],
 });
 
-// Create AppKit modal
+// Create AppKit modal and expose globally
 export const appkit = createAppKit({
   adapters: [wagmiAdapter],
   projectId: WALLETCONNECT_PROJECT_ID,
-  networks: appKitNetworks,
+  networks: [baseSepolia],
   metadata: {
     name: 'SplitBill',
     description: 'Split bills fairly with blockchain escrow protection',
