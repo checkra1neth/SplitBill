@@ -1,24 +1,16 @@
 'use client';
 
-import { useAccount, useDisconnect } from 'wagmi';
-
-declare global {
-  interface Window {
-    appkit?: {
-      open: () => void;
-    };
-  }
-}
+import { useAppKit, useAppKitAccount } from '@reown/appkit/react';
+import { useEffect } from 'react';
 
 export function AppKitButton() {
-  const { address, isConnected } = useAccount();
-  const { disconnect } = useDisconnect();
+  const { open } = useAppKit();
+  const { address, isConnected } = useAppKitAccount();
 
-  const handleConnect = () => {
-    if (typeof window !== 'undefined' && window.appkit) {
-      window.appkit.open();
-    }
-  };
+  // Debug logging
+  useEffect(() => {
+    console.log('AppKitButton status:', { address, isConnected });
+  }, [address, isConnected]);
 
   if (isConnected && address) {
     return (
@@ -30,9 +22,9 @@ export function AppKitButton() {
           type="button"
           className="retro-button"
           style={{ minWidth: 'auto', padding: '2px 8px', fontSize: '10px' }}
-          onClick={() => disconnect()}
+          onClick={() => open()}
         >
-          Disconnect
+          Change
         </button>
       </div>
     );
@@ -47,7 +39,7 @@ export function AppKitButton() {
         type="button"
         className="retro-button"
         style={{ minWidth: 'auto', padding: '2px 8px', fontSize: '10px' }}
-        onClick={handleConnect}
+        onClick={() => open()}
       >
         Connect
       </button>

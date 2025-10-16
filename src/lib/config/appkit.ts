@@ -1,16 +1,29 @@
 import { createAppKit } from '@reown/appkit/react';
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
-import { WALLETCONNECT_PROJECT_ID } from './wagmi';
 import { baseSepolia } from '@reown/appkit/networks';
+import { cookieStorage, createStorage } from 'wagmi';
 
-// Create Wagmi Adapter
+const WALLETCONNECT_PROJECT_ID = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || '';
+
+if (!WALLETCONNECT_PROJECT_ID && typeof window !== 'undefined') {
+  console.error('❌ NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID is not set in .env.local');
+}
+
+// Create Wagmi Adapter with persistent storage
 export const wagmiAdapter = new WagmiAdapter({
   projectId: WALLETCONNECT_PROJECT_ID,
   networks: [baseSepolia],
+  storage: createStorage({
+    storage: cookieStorage,
+  }),
+  ssr: true,
 });
 
-// Create AppKit modal and expose globally
-export const appkit = createAppKit({
+// Export wagmi config for use in providers
+export const wagmiConfig = wagmiAdapter.wagmiConfig;
+
+// Create AppKit modal - must be called at module level for SSR compatibility
+export const modal = createAppKit({
   adapters: [wagmiAdapter],
   projectId: WALLETCONNECT_PROJECT_ID,
   networks: [baseSepolia],
@@ -27,31 +40,15 @@ export const appkit = createAppKit({
   },
   themeMode: 'light',
   themeVariables: {
-    '--w3m-z-index': 9999,
+    '--w3m-z-index': '9999',
   },
-  featuredWalletIds: [
-    'c57ca95b47569778a828d19178114f4db188b89b763c899ba0be274e97267d96', // MetaMask
-    'fd20dc426fb37566d803205b19bbc1d4096b248ac04548e3cfb6b3a38bd033aa', // Coinbase Wallet
-    '4622a2b2d6af1c9844944291e5e7351a6aa24cd7b23099efac1b2fd875da31a0', // Trust Wallet
-    '1ae92b26df02f0abca6304df07debccd18262fdf5fe82daa81593582dac9a369', // Rainbow
-    'ecc4036f814562b41a5268adc86270fba1365471402006302e70169465b7ac18', // Zerion
-    'a797aa35c0fadbfc1a53e7f675162ed5226968b44a19ee3d24385c64d1d3c393', // Phantom
-    '19177a98252e07ddfc9af2083ba8e07ef627cb6103467ffebb3f8f4205fd7927', // Ledger Live
-    '38f5d18bd8522c244bdd70cb4a68e0e718865155811c043f052fb9f1c51de662', // Bitget Wallet
-    '971e689d0a5be527bac79629b4ee9b925e82208e5168b733496a09c0faed0709', // OKX Wallet
-  ],
-  includeWalletIds: [
-    'c57ca95b47569778a828d19178114f4db188b89b763c899ba0be274e97267d96', // MetaMask
-    'fd20dc426fb37566d803205b19bbc1d4096b248ac04548e3cfb6b3a38bd033aa', // Coinbase Wallet
-    '4622a2b2d6af1c9844944291e5e7351a6aa24cd7b23099efac1b2fd875da31a0', // Trust Wallet
-    '1ae92b26df02f0abca6304df07debccd18262fdf5fe82daa81593582dac9a369', // Rainbow
-    'ecc4036f814562b41a5268adc86270fba1365471402006302e70169465b7ac18', // Zerion
-    'a797aa35c0fadbfc1a53e7f675162ed5226968b44a19ee3d24385c64d1d3c393', // Phantom
-    '19177a98252e07ddfc9af2083ba8e07ef627cb6103467ffebb3f8f4205fd7927', // Ledger Live
-    '38f5d18bd8522c244bdd70cb4a68e0e718865155811c043f052fb9f1c51de662', // Bitget Wallet
-    '971e689d0a5be527bac79629b4ee9b925e82208e5168b733496a09c0faed0709', // OKX Wallet
-    'c286eebc742a537cd1d6818363e9dc53b21759a1e8e5d9b263d0c03ec7703576', // 1inch Wallet
-    '20459438007b75f4f4acb98bf29aa3b800550309646d375da5fd4aac6c2a2c66', // TokenPocket
-    '8a0ee50d1f22f6651afcae7eb4253e52a3310b90af5daef78a8c4929a9bb99d4', // Binance Web3 Wallet
-  ],
+  // Allow all wallets - AppKit will detect Rabby, OKX, MetaMask automatically
+  allWallets: 'SHOW',
 });
+
+// Debug logging (only on client)
+if (typeof window !== 'undefined') {
+  console.log('✅ AppKit initialized');
+  console.log('📝 Project ID:', WALLETCONNECT_PROJECT_ID);
+  console.log('📝 Network:', baseSepolia.name);
+}

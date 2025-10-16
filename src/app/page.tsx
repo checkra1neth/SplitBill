@@ -6,6 +6,7 @@ import { useBill } from '@/features/bill/hooks/useBill';
 import { useRouter } from 'next/navigation';
 import { useEscrow } from '@/features/payment/hooks/useEscrow';
 import { useToast } from '@/lib/providers/ToastProvider';
+import { ClientTime } from '@/components/ClientTime';
 import './retro.css';
 
 export default function Home() {
@@ -217,7 +218,7 @@ export default function Home() {
             Base Sepolia
           </div>
           <div className="retro-status-panel" style={{ flex: 0, minWidth: '60px' }}>
-            {new Date().toLocaleTimeString()}
+            <ClientTime format="full" />
           </div>
         </div>
       </div>
@@ -235,7 +236,7 @@ export default function Home() {
         </button>
         <div style={{ flex: 1 }} />
         <div className="retro-status-panel" style={{ minWidth: '80px', textAlign: 'center' }}>
-          {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          <ClientTime format="short" />
         </div>
       </div>
     </div>
