@@ -2,18 +2,19 @@ import { createAppKit } from '@reown/appkit/react';
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
 import { SUPPORTED_CHAINS } from './chains';
 import { WALLETCONNECT_PROJECT_ID } from './wagmi';
+import type { AppKitNetwork } from '@reown/appkit/networks';
 
 // Create Wagmi Adapter
 export const wagmiAdapter = new WagmiAdapter({
   projectId: WALLETCONNECT_PROJECT_ID,
-  networks: SUPPORTED_CHAINS,
+  networks: SUPPORTED_CHAINS as [AppKitNetwork, ...AppKitNetwork[]],
 });
 
 // Create AppKit modal
 export const appkit = createAppKit({
   adapters: [wagmiAdapter],
   projectId: WALLETCONNECT_PROJECT_ID,
-  networks: SUPPORTED_CHAINS,
+  networks: SUPPORTED_CHAINS as [AppKitNetwork, ...AppKitNetwork[]],
   metadata: {
     name: 'SplitBill',
     description: 'Split bills fairly with blockchain escrow protection',
