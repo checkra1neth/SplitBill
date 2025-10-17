@@ -1,0 +1,167 @@
+/* Reown AppKit Retro Windows 95 Theme Override */
+
+/* Global CSS variables that AppKit will inherit */
+:root {
+  /* Background colors - solid, not transparent */
+  --w3m-color-bg-1: #c0c0c0;
+  --w3m-color-bg-2: #ffffff;
+  --w3m-color-bg-3: #e0e0e0;
+  
+  /* Overlay - solid teal background */
+  --w3m-color-overlay: rgba(0, 128, 128, 0.95);
+  
+  /* Text colors */
+  --w3m-color-fg-1: #000000;
+  --w3m-color-fg-2: #000000;
+  --w3m-color-fg-3: #808080;
+  
+  /* Accent color (for selected items) */
+  --w3m-accent: #000080;
+  
+  /* Border radius - make it square for retro look */
+  --w3m-border-radius-master: 0px;
+  --w3m-border-radius: 0px;
+  --w3m-border-radius-xs: 0px;
+  --w3m-border-radius-s: 0px;
+  --w3m-border-radius-m: 0px;
+  --w3m-border-radius-l: 0px;
+  --w3m-border-radius-xl: 0px;
+  
+  /* AppKit border radius variables */
+  --apkt-borderRadius-1: 0px !important;
+  --apkt-borderRadius-2: 0px !important;
+  --apkt-borderRadius-3: 0px !important;
+  --apkt-borderRadius-4: 0px !important;
+  --apkt-borderRadius-5: 0px !important;
+  --apkt-borderRadius-6: 0px !important;
+  --apkt-borderRadius-8: 0px !important;
+  --apkt-borderRadius-10: 0px !important;
+  --apkt-borderRadius-16: 0px !important;
+  --apkt-borderRadius-20: 0px !important;
+  --apkt-borderRadius-32: 0px !important;
+  --apkt-borderRadius-64: 0px !important;
+  --apkt-borderRadius-128: 0px !important;
+  --apkt-borderRadius-round: 0px !important;
+  
+  /* Additional radius overrides */
+  --local-border-radius: 0px !important;
+  --local-border-bottom-radius: 0px !important;
+  
+  /* Font */
+  --w3m-font-family: 'MS Sans Serif', 'Microsoft Sans Serif', sans-serif;
+  --w3m-font-size-master: 12px;
+  
+  /* Z-index */
+  --w3m-z-index: 9999;
+}
+
+/* Target AppKit Web Components */
+/* These elements are in the light DOM and can be styled */
+w3m-modal,
+wcm-modal,
+appkit-modal,
+w3m-button,
+wcm-button,
+w3m-connect-button,
+wcm-connect-button,
+w3m-account-button,
+wcm-account-button {
+  /* Force retro font on all AppKit components */
+  font-family: 'MS Sans Serif', 'Microsoft Sans Serif', sans-serif !important;
+  
+  /* Ensure CSS variables are inherited */
+  --w3m-color-bg-1: #c0c0c0;
+  --w3m-color-bg-2: #ffffff;
+  --w3m-accent: #000080;
+  --w3m-border-radius-master: 0px;
+}
+
+/* Remove all modern effects from AppKit */
+w3m-modal *,
+wcm-modal *,
+appkit-modal *,
+w3m-button *,
+wcm-button * {
+  transition: none !important;
+  animation: none !important;
+}
+
+/* Ensure proper stacking */
+w3m-modal,
+wcm-modal,
+appkit-modal {
+  z-index: 9999 !important;
+}
+
+/* Force square corners on all AppKit elements */
+w3m-modal,
+wcm-modal,
+appkit-modal,
+w3m-button,
+wcm-button,
+w3m-connect-button,
+wcm-connect-button,
+w3m-account-button,
+wcm-account-button,
+button,
+wui-button,
+wui-button button,
+wui-icon-button,
+wui-icon-button button {
+  border-radius: 0 !important;
+}
+
+/* Force all buttons and their pseudo-elements to be square */
+button,
+button::before,
+button::after,
+wui-button button,
+wui-button button::before,
+wui-button button::after,
+wui-icon-button button,
+wui-icon-button button::before,
+wui-icon-button button::after {
+  border-radius: 0 !important;
+}
+
+/* Style any leaked AppKit classes in light DOM */
+[class*="w3m-"],
+[class*="wcm-"],
+[class*="appkit-"] {
+  font-family: 'MS Sans Serif', 'Microsoft Sans Serif', sans-serif !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Nuclear option: force all elements to have no border-radius */
+* {
+  --apkt-borderRadius-1: 0px !important;
+  --apkt-borderRadius-2: 0px !important;
+  --apkt-borderRadius-3: 0px !important;
+  --apkt-borderRadius-4: 0px !important;
+  --apkt-borderRadius-5: 0px !important;
+  --apkt-borderRadius-6: 0px !important;
+  --apkt-borderRadius-8: 0px !important;
+  --apkt-borderRadius-10: 0px !important;
+  --apkt-borderRadius-16: 0px !important;
+  --apkt-borderRadius-20: 0px !important;
+  --apkt-borderRadius-32: 0px !important;
+  --apkt-borderRadius-64: 0px !important;
+  --apkt-borderRadius-128: 0px !important;
+  --apkt-borderRadius-round: 0px !important;
+  --local-border-radius: 0px !important;
+  --local-border-bottom-radius: 0px !important;
+}
+
+/* Force border-radius on all AppKit elements and their children */
+appkit-modal *,
+w3m-modal *,
+wcm-modal *,
+wui-card *,
+wui-button *,
+wui-icon-button *,
+wui-list-item *,
+w3m-header *,
+w3m-router * {
+  border-radius: 0 !important;
+}

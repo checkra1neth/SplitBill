@@ -407,10 +407,13 @@ input[type="range"].retro-slider:focus {
 
 /* Pulse animation for completed bills */
 @keyframes pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: scale(1);
     opacity: 1;
   }
+
   50% {
     transform: scale(1.02);
     opacity: 0.95;
@@ -419,12 +422,16 @@ input[type="range"].retro-slider:focus {
 
 /* Celebration animation */
 @keyframes celebrate {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: rotate(0deg);
   }
+
   25% {
     transform: rotate(-5deg);
   }
+
   75% {
     transform: rotate(5deg);
   }
@@ -650,6 +657,7 @@ input[type="range"].retro-slider:focus {
 
 /* Modal/Dialog responsive styles */
 @media (max-width: 768px) {
+
   /* Make modals full width on mobile */
   .retro-window[style*="position: fixed"] {
     width: calc(100% - 16px) !important;
@@ -669,11 +677,11 @@ input[type="range"].retro-slider:focus {
 
 /* Flex gap fallback for older browsers */
 @supports not (gap: 16px) {
-  [style*="display: flex"][style*="gap"] > * {
+  [style*="display: flex"][style*="gap"]>* {
     margin-bottom: 16px;
   }
-  
-  [style*="display: flex"][style*="gap"] > *:last-child {
+
+  [style*="display: flex"][style*="gap"]>*:last-child {
     margin-bottom: 0;
   }
 }

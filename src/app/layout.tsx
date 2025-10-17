@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
+import './appkit-retro.css';
 import { OnchainProviders } from '@/lib/providers/OnchainProviders';
 import '@coinbase/onchainkit/styles.css';
 

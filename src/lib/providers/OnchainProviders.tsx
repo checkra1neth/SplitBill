@@ -3,12 +3,13 @@
 import { OnchainKitProvider } from '@coinbase/onchainkit';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { WagmiProvider } from 'wagmi';
-import { ReactNode, useState } from 'react';
+import { ReactNode, useState, useEffect } from 'react';
 import { wagmiConfig } from '@/lib/config/appkit';
 import { DEFAULT_CHAIN } from '@/lib/config/chains';
 import { ToastProvider } from '@/lib/providers/ToastProvider';
 import { AppErrorBoundary } from '@/components/AppErrorBoundary';
 import { ThemeProvider } from '@/lib/providers/ThemeProvider';
+import { injectAppKitRetroStyles } from '@/lib/utils/injectAppKitStyles';
 
 export function OnchainProviders({ children }: { children: ReactNode }) {
   const [queryClient] = useState(() => new QueryClient({
@@ -19,6 +20,11 @@ export function OnchainProviders({ children }: { children: ReactNode }) {
       },
     },
   }));
+
+  // Inject retro styles into AppKit Shadow DOM
+  useEffect(() => {
+    injectAppKitRetroStyles();
+  }, []);
 
   return (
     <WagmiProvider config={wagmiConfig} reconnectOnMount={true}>

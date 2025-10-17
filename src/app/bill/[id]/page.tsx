@@ -27,6 +27,7 @@ import { RefundClaimButton } from '@/features/payment/components/RefundClaimButt
 import { useEscrowBillInfo } from '@/features/payment/hooks/useEscrowBillData';
 import QRCode from 'react-qr-code';
 import { RetroConfirmDialog } from '@/components/RetroConfirmDialog';
+import { AppKitButton } from '@/components/AppKitButton';
 
 export default function BillPage() {
   const params = useParams();
@@ -761,7 +762,20 @@ export default function BillPage() {
               )}
 
               {!address && (
-                <WalletConnectSection />
+                <div style={{ marginTop: '12px' }}>
+                  <div style={{ 
+                    background: '#ffff00', 
+                    border: '2px solid #ff8800', 
+                    padding: '8px', 
+                    marginBottom: '8px', 
+                    fontSize: '11px',
+                    textAlign: 'center'
+                  }}>
+                    <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>⚠️ Wallet Not Connected</div>
+                    <div style={{ fontSize: '10px' }}>Connect your wallet to pay your share</div>
+                  </div>
+                  <AppKitButton />
+                </div>
               )}
             </div>
           </div>

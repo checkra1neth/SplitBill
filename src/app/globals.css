@@ -48,3 +48,51 @@ body {
     text-wrap: balance;
   }
 }
+
+/* ============================================
+   REOWN APPKIT RETRO OVERRIDES
+   ============================================ */
+
+/* Target AppKit modal elements globally */
+/* These styles work alongside appkit-retro.css */
+
+/* Modal wrapper */
+w3m-modal,
+wcm-modal,
+appkit-modal {
+  --w3m-accent: #000080 !important;
+  --w3m-color-bg-1: #c0c0c0 !important;
+  font-family: 'MS Sans Serif', 'Microsoft Sans Serif', sans-serif !important;
+}
+
+/* Connect button in the app */
+w3m-button,
+wcm-button,
+w3m-connect-button,
+wcm-connect-button,
+w3m-account-button,
+wcm-account-button,
+appkit-button {
+  font-family: 'MS Sans Serif', 'Microsoft Sans Serif', sans-serif !important;
+}
+
+/* Remove all animations and transitions from AppKit */
+w3m-modal *,
+wcm-modal *,
+appkit-modal *,
+[class*="w3m-"] *,
+[class*="wcm-"] *,
+[class*="appkit-"] * {
+  transition: none !important;
+  animation: none !important;
+}
+
+/* Force square corners everywhere */
+w3m-modal *,
+wcm-modal *,
+appkit-modal *,
+[class*="w3m-"],
+[class*="wcm-"],
+[class*="appkit-"] {
+  border-radius: 0 !important;
+}
