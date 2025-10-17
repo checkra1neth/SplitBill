@@ -10,6 +10,7 @@ if (!WALLETCONNECT_PROJECT_ID && typeof window !== 'undefined') {
 }
 
 // Create Wagmi Adapter with persistent storage
+// Note: If WalletConnect has rate limit issues, users can still connect via browser extensions
 export const wagmiAdapter = new WagmiAdapter({
   projectId: WALLETCONNECT_PROJECT_ID,
   networks: [baseSepolia],
@@ -34,12 +35,14 @@ export const modal = createAppKit({
     icons: ['https://splitbill.app/icon.png'],
   },
   features: {
-    analytics: true,
+    analytics: false, // Disable to reduce WalletConnect requests
     email: false,
     socials: false,
-    swaps: true,
-    onramp: true,
+    swaps: false, // Disable to reduce WalletConnect requests
+    onramp: false, // Disable to reduce WalletConnect requests
   },
+  enableWalletConnect: true,
+  enableInjected: true, // Enable browser extension connections (doesn't use WalletConnect)
   themeMode: 'light',
   themeVariables: {
     '--w3m-z-index': 9999,

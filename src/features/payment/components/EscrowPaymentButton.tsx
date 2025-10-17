@@ -206,7 +206,7 @@ export function EscrowPaymentButton({
         <div style={{ background: '#ffcccc', border: '2px solid #ff0000', padding: '8px', fontSize: '11px', fontFamily: '"MS Sans Serif", sans-serif' }}>
           <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>⚠️ Payment Amount Not Found</div>
           <div style={{ fontSize: '10px', marginBottom: '4px' }}>
-            The escrow contract doesn't have a payment amount for your address.
+            The escrow contract doesn&apos;t have a payment amount for your address.
           </div>
           <div style={{ fontSize: '10px', color: '#cc0000' }}>
             This bill may not be activated yet. Ask the bill creator to activate escrow protection.
