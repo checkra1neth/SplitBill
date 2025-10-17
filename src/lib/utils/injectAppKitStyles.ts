@@ -867,7 +867,7 @@ function styleModal(modal: Element) {
   }, 100);
 
   // Зберігаємо ID інтервалу для можливості очищення
-  (shadow as any).__retroStyleInterval = intervalId;
+  (shadow as ShadowRoot & { __retroStyleInterval?: NodeJS.Timeout }).__retroStyleInterval = intervalId;
 
 }
 
@@ -876,7 +876,7 @@ function observeShadowRoot(modal: Element) {
   if (!shadow) return;
 
   // Перевіряємо чи вже спостерігаємо
-  if ((shadow as any).__retroObserver) return;
+  if ((shadow as ShadowRoot & { __retroObserver?: MutationObserver }).__retroObserver) return;
 
   const shadowObserver = new MutationObserver(() => {
     styleModal(modal);
@@ -887,7 +887,7 @@ function observeShadowRoot(modal: Element) {
     subtree: true,
   });
 
-  (shadow as any).__retroObserver = shadowObserver;
+  (shadow as ShadowRoot & { __retroObserver?: MutationObserver }).__retroObserver = shadowObserver;
 }
 
 export function injectAppKitRetroStyles() {
