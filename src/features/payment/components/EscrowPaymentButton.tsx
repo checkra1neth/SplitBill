@@ -45,7 +45,8 @@ export function EscrowPaymentButton({
 
   // IMPORTANT: Read exact amount from contract (in wei)
   // This is the amount that was stored when bill was created
-  const { shareAmount: weiAmount, isLoading: isLoadingShare } = useEscrowShare(
+  // Auto-refreshes every 3 seconds to detect escrow activation
+  const { shareAmount: weiAmount, isLoading: isLoadingShare, refetch: refetchShare } = useEscrowShare(
     escrowBillId,
     address
   );
@@ -205,12 +206,19 @@ export function EscrowPaymentButton({
       {!isLoadingShare && (!weiAmount || weiAmount === BigInt(0)) && (
         <div style={{ background: '#ffcccc', border: '2px solid #ff0000', padding: '8px', fontSize: '11px', fontFamily: '"MS Sans Serif", sans-serif' }}>
           <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>⚠️ Payment Amount Not Found</div>
-          <div style={{ fontSize: '10px', marginBottom: '4px' }}>
+          <div style={{ fontSize: '10px', marginBottom: '6px' }}>
             The escrow contract doesn&apos;t have a payment amount for your address.
           </div>
-          <div style={{ fontSize: '10px', color: '#cc0000' }}>
+          <div style={{ fontSize: '10px', color: '#cc0000', marginBottom: '8px' }}>
             This bill may not be activated yet. Ask the bill creator to activate escrow protection.
           </div>
+          <button
+            onClick={() => refetchShare()}
+            className="retro-button"
+            style={{ width: '100%', fontSize: '10px', padding: '4px' }}
+          >
+            🔄 Refresh Status
+          </button>
         </div>
       )}
 

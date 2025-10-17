@@ -9,7 +9,7 @@ import { baseSepolia } from 'wagmi/chains';
  * Returns the exact amount in wei that participant needs to pay
  */
 export function useEscrowShare(escrowBillId: string, participantAddress?: `0x${string}`) {
-  const { data: shareAmount, isLoading, error } = useReadContract({
+  const { data: shareAmount, isLoading, error, refetch } = useReadContract({
     address: ESCROW_CONTRACT_ADDRESS,
     abi: ESCROW_ABI,
     functionName: 'getShare',
@@ -17,6 +17,7 @@ export function useEscrowShare(escrowBillId: string, participantAddress?: `0x${s
     chainId: baseSepolia.id,
     query: {
       enabled: !!escrowBillId && !!participantAddress,
+      refetchInterval: 3000, // Auto-refresh every 3 seconds to detect escrow activation
     },
   });
 
@@ -24,6 +25,7 @@ export function useEscrowShare(escrowBillId: string, participantAddress?: `0x${s
     shareAmount: shareAmount as bigint | undefined,
     isLoading,
     error,
+    refetch,
   };
 }
 
