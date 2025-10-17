@@ -5,7 +5,7 @@ import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { useBill } from '@/features/bill/hooks/useBill';
 import { usePayment } from '@/features/payment/hooks/usePayment';
 import { calculateParticipantShares, formatCurrency } from '@/lib/utils/calculations';
-import { useAccount, useConnect } from 'wagmi';
+import { useAccount } from 'wagmi';
 import { resolveParticipantIdentity } from '@/features/bill/utils/resolveParticipantIdentity';
 import { DEFAULT_CHAIN } from '@/lib/config/chains';
 import { useToast } from '@/lib/providers/ToastProvider';
@@ -928,7 +928,7 @@ export default function BillPage() {
     </div>
   );
 }
-}
+
 
 function BillPageSkeleton() {
   return (
