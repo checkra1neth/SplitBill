@@ -819,14 +819,9 @@ function styleModal(modal: Element) {
   const allElements = shadow.querySelectorAll('*');
   allElements.forEach(processElement);
 
-  // Створюємо MutationObserver для відстеження змін атрибутів style
+  // Створюємо MutationObserver тільки для нових елементів
   const styleObserver = new MutationObserver((mutations) => {
     mutations.forEach((mutation) => {
-      if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
-        const target = mutation.target as HTMLElement;
-        forceSquareCorners(target);
-      }
-      // Також обробляємо нові елементи
       if (mutation.type === 'childList') {
         mutation.addedNodes.forEach((node: Node) => {
           if (node.nodeType === 1) {
@@ -838,36 +833,13 @@ function styleModal(modal: Element) {
     });
   });
 
-  // Спостерігаємо за всіма змінами в shadow DOM
+  // Спостерігаємо тільки за додаванням нових елементів (не за зміною атрибутів)
   styleObserver.observe(shadow, {
-    attributes: true,
-    attributeFilter: ['style', 'class'],
     childList: true,
     subtree: true,
   });
 
-  // Додаємо глобальний обробник для всіх hover подій
-  shadow.addEventListener('mouseover', (e) => {
-    const target = e.target as HTMLElement;
-    if (target) {
-      forceSquareCorners(target);
-      // Також обробляємо всі дочірні елементи
-      target.querySelectorAll('*').forEach(child => forceSquareCorners(child as HTMLElement));
-      
-      // Обробляємо shadow root цільового елемента
-      if (target.shadowRoot) {
-        target.shadowRoot.querySelectorAll('*').forEach(child => forceSquareCorners(child as HTMLElement));
-      }
-    }
-  }, { passive: true, capture: true });
-
-  // Періодично перевіряємо і виправляємо стилі
-  const intervalId = setInterval(() => {
-    shadow.querySelectorAll('*').forEach(processElement);
-  }, 100);
-
-  // Зберігаємо ID інтервалу для можливості очищення
-  (shadow as ShadowRoot & { __retroStyleInterval?: NodeJS.Timeout }).__retroStyleInterval = intervalId;
+  // Видалено setInterval - він викликав постійні ререндери на мобільних
 
 }
 
@@ -920,8 +892,26 @@ export function injectAppKitRetroStyles() {
 
   applyStyles();
 
-  const observer = new MutationObserver(() => applyStyles());
-  observer.observe(document.body, { childList: true, subtree: true });
+  // Спостерігаємо тільки за появою модального вікна, не за всіма змінами
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      mutation.addedNodes.forEach((node) => {
+        if (node.nodeType === 1) {
+          const element = node as Element;
+          if (
+            element.tagName === 'APPKIT-MODAL' ||
+            element.tagName === 'W3M-MODAL' ||
+            element.tagName === 'WCM-MODAL' ||
+            element.querySelector('appkit-modal, w3m-modal, wcm-modal')
+          ) {
+            applyStyles();
+          }
+        }
+      });
+    });
+  });
+  
+  observer.observe(document.body, { childList: true, subtree: false });
 
   globalWindow.__retroAppKitObserver = observer;
 }
