@@ -1,7 +1,7 @@
 import { createAppKit } from '@reown/appkit/react';
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
 import { baseSepolia } from '@reown/appkit/networks';
-import { cookieStorage, createStorage } from 'wagmi';
+import { cookieStorage, createStorage, http } from 'wagmi';
 
 const WALLETCONNECT_PROJECT_ID = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || '';
 
@@ -9,11 +9,14 @@ if (!WALLETCONNECT_PROJECT_ID && typeof window !== 'undefined') {
   console.error('❌ NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID is not set in .env.local');
 }
 
-// Create Wagmi Adapter with persistent storage
-// Note: If WalletConnect has rate limit issues, users can still connect via browser extensions
+// Create Wagmi Adapter with persistent storage and custom RPC
+// Using public RPC to avoid WalletConnect RPC issues
 export const wagmiAdapter = new WagmiAdapter({
   projectId: WALLETCONNECT_PROJECT_ID,
   networks: [baseSepolia],
+  transports: {
+    [baseSepolia.id]: http('https://sepolia.base.org'),
+  },
   storage: createStorage({
     storage: cookieStorage,
   }),
