@@ -9,9 +9,19 @@ Split bills and pay instantly with crypto on Base blockchain.
 - 💰 **Automatic Calculations** – Split items, tax, and tips proportionally
 - 🧾 **Identity-Aware Participants** – Resolve Basenames, ENS, and raw addresses with duplicate protection
 - 📱 **Responsive Retro UI** – Windows 95-inspired design that works on mobile and desktop
-- 🔗 **Easy Sharing** – Share bills via link or QR code; optional onchain snapshot makes links short and trustless
+- 🔗 **Easy Sharing** – Share bills via link or QR code
 - 📈 **Live ETH Pricing** – Real-time oracle for accurate payment amounts
 - ⚡ **Instant Payments** – Pay your share onchain in seconds
+
+### On-Chain Metadata Registry (NEW!)
+- 📦 **Permanent Bill Storage** – Store bill data permanently on blockchain
+- 🔗 **Auto URL Shortening** – Long share links automatically shorten after publishing on-chain
+- 📊 **User Statistics** – Track total bills created and volume
+- 🏷️ **Tag-Based Search** – Find bills by tags (restaurant, cafe, groceries, etc.)
+- 🔒 **Privacy Controls** – Make bills private or public
+- ⭐ **Bill Ratings** – Rate and review bills
+- 👥 **Access Management** – Grant/revoke access to private bills
+- 📋 **My Bills List** – View all your published bills in one place
 
 ### Escrow Protection (Optional)
 - 🔒 **Smart Contract Escrow** – Funds held securely until all participants pay
@@ -42,8 +52,18 @@ Split bills and pay instantly with crypto on Base blockchain.
 
 ## Key Components
 
+### Smart Contracts
+- **SplitBillEscrow.sol** - Trustless bill settlement with escrow protection
+- **BillMetadataRegistry.sol** - On-chain bill storage and social features
+
+### Metadata System
+- **useBillMetadata.ts** - Hook for metadata operations (publish, rate, search)
+- **PublishBillButton.tsx** - Publish bills to blockchain
+- **UserBillsList.tsx** - Display user's published bills
+- **BillsByTagSearch.tsx** - Search bills by tags
+- **AccessControlPanel.tsx** - Privacy controls and access management
+
 ### Escrow System
-- **SplitBillEscrow.sol** - Smart contract for trustless bill settlement
 - **useEscrow.ts** - Hook for escrow operations (create, pay, cancel, refund)
 - **useEscrowBillData.ts** - Hook for reading contract state with auto-refresh
 - **EscrowPaymentProgress.tsx** - Real-time payment tracking component
@@ -136,6 +156,27 @@ Participant statuses:
 - ✓ **REFUNDED** (gray) - Refund successfully claimed
 - ✗ **CANCELLED** (gray) - Bill cancelled, no payment made
 
+### Publishing Bills On-Chain
+
+After creating a bill, you can publish it to the blockchain for permanent storage:
+
+1. **Publish Button** - Click "Publish to Blockchain" on any bill
+2. **Add Metadata** - Optionally add:
+   - Tags (restaurant, cafe, groceries, etc.)
+   - Privacy setting (public/private)
+   - Beneficiary address (for charity/group bills)
+3. **Confirm Transaction** - Pay gas fee to store bill on-chain
+4. **Auto URL Shortening** - Long share links automatically become short after publishing
+5. **View Published Bills** - Access "My Bills" to see all your published bills
+
+**Benefits of Publishing:**
+- Permanent storage on blockchain
+- Shorter, cleaner share links
+- Searchable by tags
+- User statistics tracking
+- Privacy controls
+- Bill ratings and reviews
+
 ### Payment Modes
 
 #### Direct Payment (Default)
@@ -181,7 +222,11 @@ splitbill/
 │   │   ├── WalletConnect.tsx        # Wallet connection UI
 │   │   ├── ActivateEscrowButton.tsx # Escrow activation
 │   │   ├── GasEstimateDisplay.tsx   # Gas cost preview
-│   │   └── TransactionPending.tsx   # Transaction status
+│   │   ├── TransactionPending.tsx   # Transaction status
+│   │   ├── PublishBillButton.tsx    # Publish to blockchain
+│   │   ├── UserBillsList.tsx        # User's published bills
+│   │   ├── BillsByTagSearch.tsx     # Search bills by tag
+│   │   └── AccessControlPanel.tsx   # Privacy & access management
 │   │
 │   ├── features/                     # Feature modules (isolated)
 │   │   ├── bill/                    # Bill management feature
@@ -192,7 +237,8 @@ splitbill/
 │   │   │   │   ├── EscrowManagementPanel.tsx    # Creator controls
 │   │   │   │   └── EscrowDeadlineDisplay.tsx    # Deadline countdown
 │   │   │   └── hooks/               # Bill logic
-│   │   │       └── useBill.ts       # Bill state management
+│   │   │       ├── useBill.ts       # Bill state management
+│   │   │       └── useBillMetadata.ts # Metadata operations
 │   │   │
 │   │   └── payment/                 # Payment feature
 │   │       ├── components/          # Payment UI
@@ -207,7 +253,8 @@ splitbill/
 │       ├── config/                  # Configuration
 │       │   ├── chains.ts           # Blockchain config
 │       │   ├── wagmi.ts            # Wallet config
-│       │   └── escrow.ts           # Escrow contract config
+│       │   ├── escrow.ts           # Escrow contract config
+│       │   └── metadata.ts         # Metadata contract config
 │       ├── providers/               # React providers
 │       │   ├── OnchainProviders.tsx
 │       │   └── ToastProvider.tsx
@@ -217,11 +264,14 @@ splitbill/
 │           ├── calculations.ts     # Bill calculations
 │           ├── escrow.ts           # Escrow helpers
 │           ├── escrowErrors.ts     # Error handling
-│           └── storage.ts          # LocalStorage helpers
+│           ├── storage.ts          # LocalStorage helpers
+│           └── share.ts            # URL shortening & sharing
 │
 ├── contracts/                        # Smart contracts
 │   ├── SplitBillEscrow.sol         # Escrow contract (deployed)
-│   ├── deploy.sh                    # Deployment script
+│   ├── BillMetadataRegistry.sol    # Metadata registry (deployed)
+│   ├── deploy.sh                    # Escrow deployment script
+│   ├── deploy-metadata-registry.sh  # Metadata deployment script
 │   ├── deploy.js                    # Deployment logic
 │   └── README.md                    # Contract docs
 │
@@ -259,6 +309,52 @@ NEXT_PUBLIC_BILL_METADATA_CONTRACT_ADDRESS=0xabcdef1234567890abcdef1234567890abc
 ```
 
 ## API Examples
+
+### Using Bill Metadata
+
+```typescript
+import { useBillMetadata } from '@/features/bill/hooks/useBillMetadata';
+
+function BillComponent({ billId }) {
+  const {
+    publishBill,
+    updateBillPrivacy,
+    rateBill,
+    grantAccess,
+    revokeAccess,
+    getUserStats,
+    searchByTag,
+    getUserBills,
+    isPublishing,
+    error
+  } = useBillMetadata();
+  
+  // Publish bill to blockchain
+  const handlePublish = async () => {
+    await publishBill(
+      billId,
+      ['restaurant', 'dinner'],  // tags
+      false,                      // isPrivate
+      '0x...'                     // beneficiary (optional)
+    );
+  };
+  
+  // Rate a bill
+  const handleRate = async () => {
+    await rateBill(billId, 5); // 1-5 stars
+  };
+  
+  // Get user statistics
+  const stats = await getUserStats('0x...');
+  console.log(`Total bills: ${stats.totalBills}, Volume: ${stats.totalVolume}`);
+  
+  return (
+    <button onClick={handlePublish} disabled={isPublishing}>
+      Publish to Blockchain
+    </button>
+  );
+}
+```
 
 ### Using Escrow Hooks
 
@@ -431,7 +527,18 @@ For detailed information, see:
 
 ## Recent Updates
 
-### v2.1 - Status Display & UX Improvements (Latest)
+### v3.0 - On-Chain Metadata & Social Features (Latest)
+- ✅ **Permanent Bill Storage** - Store bills on blockchain via BillMetadataRegistry
+- ✅ **Auto URL Shortening** - Long share links automatically shorten after publishing
+- ✅ **User Statistics** - Track total bills created and volume per user
+- ✅ **Tag-Based Search** - Find bills by tags (restaurant, cafe, groceries, etc.)
+- ✅ **Privacy Controls** - Make bills private or public
+- ✅ **Bill Ratings** - Rate and review bills (1-5 stars)
+- ✅ **Access Management** - Grant/revoke access to private bills
+- ✅ **My Bills List** - View all your published bills in one place
+- ✅ **Beneficiary Support** - Optional beneficiary field for charity/group bills
+
+### v2.1 - Status Display & UX Improvements
 - ✅ Real-time status updates for cancelled/refunded bills
 - ✅ Dynamic payment button visibility (hides when bill is cancelled/complete)
 - ✅ Enhanced status indicators with 5 states (PAID, UNPAID, REFUND, REFUNDED, CANCELLED)
@@ -508,9 +615,26 @@ This project was built for the Base Batches buildathon to bring more users oncha
 - ✅ Comprehensive error handling and gas transparency
 - ✅ Production-ready with optimizations and testing
 
+## Smart Contracts
+
+### Deployed Contracts on Base Sepolia
+
+- **SplitBillEscrow**: `0x5FbDB2315678afecb367f032d93F642f64180aa3`
+  - Trustless bill settlement with escrow protection
+  - Flexible refund system
+  - 7-day deadline with auto-refund
+  
+- **BillMetadataRegistry**: `0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512`
+  - Permanent on-chain bill storage
+  - User statistics and analytics
+  - Tag-based search and discovery
+  - Privacy controls and access management
+  - Bill ratings and reviews
+
+[View on BaseScan](https://sepolia.basescan.org/)
+
 ## Links
 
 - **Live Demo**: [Coming Soon]
-- **Contract on BaseScan**: [View on BaseScan](https://sepolia.basescan.org/)
 - **Documentation**: See `docs/` folder
 - **Development Notes**: See `dev-notes/` folder (local only)
