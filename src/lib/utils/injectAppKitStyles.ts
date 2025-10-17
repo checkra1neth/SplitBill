@@ -828,7 +828,7 @@ function styleModal(modal: Element) {
       }
       // Також обробляємо нові елементи
       if (mutation.type === 'childList') {
-        mutation.addedNodes.forEach((node) => {
+        mutation.addedNodes.forEach((node: Node) => {
           if (node.nodeType === 1) {
             processElement(node as Element);
             (node as Element).querySelectorAll('*').forEach(processElement);
