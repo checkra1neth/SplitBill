@@ -201,8 +201,21 @@ export function EscrowPaymentButton({
         </div>
       )}
 
+      {/* Warning if amount is 0 or not loaded */}
+      {!isLoadingShare && (!weiAmount || weiAmount === BigInt(0)) && (
+        <div style={{ background: '#ffcccc', border: '2px solid #ff0000', padding: '8px', fontSize: '11px', fontFamily: '"MS Sans Serif", sans-serif' }}>
+          <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>⚠️ Payment Amount Not Found</div>
+          <div style={{ fontSize: '10px', marginBottom: '4px' }}>
+            The escrow contract doesn't have a payment amount for your address.
+          </div>
+          <div style={{ fontSize: '10px', color: '#cc0000' }}>
+            This bill may not be activated yet. Ask the bill creator to activate escrow protection.
+          </div>
+        </div>
+      )}
+
       {/* Payment amount display */}
-      {weiAmount && !isLoadingShare && (
+      {weiAmount && weiAmount > BigInt(0) && !isLoadingShare && (
         <div style={{ background: '#e0ffe0', border: '1px solid #008000', padding: '8px', fontSize: '11px', fontFamily: '"MS Sans Serif", sans-serif' }}>
           <div style={{ marginBottom: '4px' }}>💰 Amount to pay: <strong>{formatEthAmount(ethAmount)} ETH</strong></div>
           <div style={{ fontSize: '10px', color: '#006600', marginBottom: '2px' }}>
@@ -254,7 +267,7 @@ export function EscrowPaymentButton({
       {/* Payment button */}
       <button
         onClick={handlePay}
-        disabled={disabled || isPending || isConfirming || isLoadingShare || !weiAmount}
+        disabled={disabled || isPending || isConfirming || isLoadingShare || !weiAmount || weiAmount === BigInt(0)}
         className="retro-button"
         style={{ width: '100%' }}
       >
@@ -264,9 +277,11 @@ export function EscrowPaymentButton({
             : 'Processing transaction...'
           : isLoadingShare
             ? 'Loading amount...'
-            : isWrongNetwork
-              ? 'Switch Network & Pay'
-              : `Pay ${formatEthAmount(ethAmount)} ETH`}
+            : !weiAmount || weiAmount === BigInt(0)
+              ? 'Escrow Not Activated'
+              : isWrongNetwork
+                ? 'Switch Network & Pay'
+                : `Pay ${formatEthAmount(ethAmount)} ETH`}
       </button>
 
       {/* Pending transaction info */}
