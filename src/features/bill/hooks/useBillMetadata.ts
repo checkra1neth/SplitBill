@@ -199,7 +199,12 @@ export function useBillAccess() {
  */
 export function useRateBill() {
   const { writeContract, data: txHash, isPending, error } = useWriteContract();
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash: txHash });
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ 
+    hash: txHash,
+    query: {
+      enabled: !!txHash,
+    },
+  });
 
   const rateBill = async (billId: string, rating: number) => {
     if (!BILL_METADATA_CONTRACT_ADDRESS) {

@@ -58,6 +58,13 @@ export default function BillPage() {
   const metadataRegistryEnabled = isMetadataRegistryConfigured();
   const { metadata: chainBillSnapshot, owner: metadataOwner, refetch: refetchMetadata } = useBillMetadata(billId);
   const { isPending: isPublishingMetadata, isConfirming: isConfirmingMetadata, isSuccess: isMetadataPublishedTx, error: publishMetadataError } = usePublishBillMetadata();
+  
+  // Handler for when bill is published - refresh both bill and metadata
+  const handleBillPublished = () => {
+    console.log('Bill published! Refreshing metadata...');
+    refreshBill();
+    refetchMetadata();
+  };
   const [hasNotifiedPublishSuccess, setHasNotifiedPublishSuccess] = useState(false);
   const [hasNotifiedPublishError, setHasNotifiedPublishError] = useState(false);
   const [isQrExpanded, setIsQrExpanded] = useState(false);
@@ -136,23 +143,27 @@ export default function BillPage() {
     setHasNotifiedPublishSuccess(true);
     showToast({ message: 'Share data published onchain. Link is ready!', type: 'success' });
     
-    // Refetch immediately
+    // Refetch immediately and multiple times to ensure blockchain state is updated
+    console.log('Transaction confirmed! Starting metadata refresh cycle...');
     refetchMetadata();
     
-    // Refetch multiple times to ensure blockchain state is updated
     const timers = [
       setTimeout(() => {
         console.log('Refetching metadata (attempt 1)...');
         refetchMetadata();
-      }, 2000),
+      }, 1000),
       setTimeout(() => {
         console.log('Refetching metadata (attempt 2)...');
         refetchMetadata();
-      }, 5000),
+      }, 2000),
       setTimeout(() => {
         console.log('Refetching metadata (attempt 3)...');
         refetchMetadata();
-      }, 10000),
+      }, 3000),
+      setTimeout(() => {
+        console.log('Refetching metadata (attempt 4)...');
+        refetchMetadata();
+      }, 5000),
     ];
     
     return () => timers.forEach(timer => clearTimeout(timer));
@@ -182,9 +193,14 @@ export default function BillPage() {
   const shareUrl = useMemo(() => {
     if (typeof window === 'undefined' || !bill) return '';
     const url = buildShareableBillUrl(bill, window.location.origin, isMetadataPublished);
-    console.log('Share URL updated:', { isMetadataPublished, url });
+    console.log('Share URL updated:', { 
+      isMetadataPublished, 
+      metadataOwner, 
+      url,
+      isShortUrl: !url.includes('?share=')
+    });
     return url;
-  }, [bill, isMetadataPublished]);
+  }, [bill, isMetadataPublished, metadataOwner]);
 
   // Show loading state while checking blockchain
   if (!bill) {
@@ -883,7 +899,7 @@ export default function BillPage() {
                   )}
                 </div>
                 {metadataRegistryEnabled && !isMetadataPublished && !isPublishingInFlight && (
-                  <PublishBillButton bill={bill} onPublished={refreshBill} />
+                  <PublishBillButton bill={bill} onPublished={handleBillPublished} />
                 )}
                 
                 {metadataRegistryEnabled && isPublishingInFlight && (

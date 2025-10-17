@@ -56,7 +56,7 @@ export function PublishBillButton({ bill, onPublished }: PublishBillButtonProps)
   useEffect(() => {
     console.log('PublishBillButton state:', { isSuccess, hasHandledSuccess, isPending });
     
-    if (isSuccess && !hasHandledSuccess) {
+    if (isSuccess && !hasHandledSuccess && !isPending) {
       console.log('Publishing successful! Calling onPublished callback...');
       setHasHandledSuccess(true);
       
@@ -66,7 +66,12 @@ export function PublishBillButton({ bill, onPublished }: PublishBillButtonProps)
       });
       
       setShowDialog(false);
-      onPublished?.();
+      
+      // Call callback after a short delay to ensure state is updated
+      setTimeout(() => {
+        console.log('Calling onPublished callback...');
+        onPublished?.();
+      }, 500);
     }
   }, [isSuccess, hasHandledSuccess, isPending, showToast, onPublished]);
 
