@@ -9,6 +9,7 @@ pragma solidity ^0.8.20;
 contract SplitBillEscrow {
     struct Bill {
         address creator;
+        address beneficiary; // Who receives the funds (can be different from creator)
         uint256 totalAmount;
         uint256 participantCount;
         uint256 paidCount;
@@ -26,7 +27,7 @@ contract SplitBillEscrow {
     // Default deadline: 7 days
     uint256 public constant DEFAULT_DEADLINE = 7 days;
     
-    event BillCreated(bytes32 indexed billId, address indexed creator, uint256 totalAmount, uint256 deadline);
+    event BillCreated(bytes32 indexed billId, address indexed creator, address indexed beneficiary, uint256 totalAmount, uint256 deadline);
     event PaymentReceived(bytes32 indexed billId, address indexed participant, uint256 amount);
     event BillSettled(bytes32 indexed billId, uint256 totalAmount);
     event BillCancelled(bytes32 indexed billId);
@@ -36,20 +37,24 @@ contract SplitBillEscrow {
     /**
      * @dev Create a new bill with participant shares
      * @param billId Unique identifier for the bill
+     * @param beneficiary Address that will receive the funds (e.g., restaurant, or one of participants)
      * @param participants Array of participant addresses
      * @param shares Array of amounts each participant owes
      */
     function createBill(
         bytes32 billId,
+        address beneficiary,
         address[] calldata participants,
         uint256[] calldata shares
     ) external {
         require(participants.length == shares.length, "Length mismatch");
         require(participants.length > 0, "No participants");
+        require(beneficiary != address(0), "Invalid beneficiary");
         require(bills[billId].creator == address(0), "Bill exists");
 
         Bill storage bill = bills[billId];
         bill.creator = msg.sender;
+        bill.beneficiary = beneficiary;
         bill.participantCount = participants.length;
         bill.createdAt = block.timestamp;
         bill.deadline = block.timestamp + DEFAULT_DEADLINE;
@@ -65,18 +70,20 @@ contract SplitBillEscrow {
 
         bill.totalAmount = total;
 
-        emit BillCreated(billId, msg.sender, total, bill.deadline);
+        emit BillCreated(billId, msg.sender, beneficiary, total, bill.deadline);
     }
     
     /**
      * @dev Create a bill with custom deadline
      * @param billId Unique identifier for the bill
+     * @param beneficiary Address that will receive the funds
      * @param participants Array of participant addresses
      * @param shares Array of amounts each participant owes
      * @param customDeadline Custom deadline timestamp
      */
     function createBillWithDeadline(
         bytes32 billId,
+        address beneficiary,
         address[] calldata participants,
         uint256[] calldata shares,
         uint256 customDeadline
@@ -85,7 +92,7 @@ contract SplitBillEscrow {
         require(customDeadline <= block.timestamp + 30 days, "Deadline too far");
         
         // Create bill normally
-        this.createBill(billId, participants, shares);
+        this.createBill(billId, beneficiary, participants, shares);
         
         // Override deadline
         bills[billId].deadline = customDeadline;
@@ -117,8 +124,9 @@ contract SplitBillEscrow {
     }
 
     /**
-     * @dev Internal function to settle bill and transfer to creator
+     * @dev Internal function to settle bill and transfer to beneficiary
      * @param billId The bill to settle
+     * @notice Beneficiary receives all collected funds, even if they are a participant
      */
     function _settleBill(bytes32 billId) internal {
         Bill storage bill = bills[billId];
@@ -127,13 +135,18 @@ contract SplitBillEscrow {
 
         bill.settled = true;
 
-        // Transfer total amount to bill creator
-        uint256 amountToTransfer = address(this).balance >= bill.totalAmount 
-            ? bill.totalAmount 
-            : address(this).balance;
-            
-        (bool success, ) = bill.creator.call{value: amountToTransfer}("");
-        require(success, "Transfer failed");
+        // Beneficiary always receives the full amount collected
+        uint256 amountToTransfer = bill.totalAmount;
+        
+        // Ensure we don't try to transfer more than available
+        if (amountToTransfer > address(this).balance) {
+            amountToTransfer = address(this).balance;
+        }
+        
+        if (amountToTransfer > 0) {
+            (bool success, ) = bill.beneficiary.call{value: amountToTransfer}("");
+            require(success, "Transfer failed");
+        }
 
         emit BillSettled(billId, amountToTransfer);
     }
@@ -180,6 +193,7 @@ contract SplitBillEscrow {
     /**
      * @dev Partial settlement - settle with only those who paid (creator only)
      * @param billId The bill to partially settle
+     * @notice Beneficiary receives all collected funds, even if they paid
      */
     function partialSettle(bytes32 billId) external {
         Bill storage bill = bills[billId];
@@ -192,12 +206,14 @@ contract SplitBillEscrow {
         
         bill.settled = true;
         
-        // Transfer available balance (all paid amounts)
+        // Beneficiary receives all collected funds
         uint256 balance = address(this).balance;
         require(balance > 0, "No funds to settle");
         
-        (bool success, ) = bill.creator.call{value: balance}("");
-        require(success, "Transfer failed");
+        if (balance > 0) {
+            (bool success, ) = bill.beneficiary.call{value: balance}("");
+            require(success, "Transfer failed");
+        }
         
         emit PartialSettlement(billId, balance, bill.paidCount);
     }
@@ -248,6 +264,7 @@ contract SplitBillEscrow {
      */
     function getBillInfo(bytes32 billId) external view returns (
         address creator,
+        address beneficiary,
         uint256 totalAmount,
         uint256 participantCount,
         uint256 paidCount,
@@ -258,6 +275,7 @@ contract SplitBillEscrow {
         Bill storage bill = bills[billId];
         return (
             bill.creator,
+            bill.beneficiary,
             bill.totalAmount,
             bill.participantCount,
             bill.paidCount,
@@ -326,5 +344,13 @@ contract SplitBillEscrow {
     function canRefund(bytes32 billId, address participant) external view returns (bool) {
         Bill storage bill = bills[billId];
         return bill.cancelled && bill.paidAmounts[participant] > 0;
+    }
+    
+    /**
+     * @dev Get beneficiary address for a bill
+     * @param billId The bill to check
+     */
+    function getBeneficiary(bytes32 billId) external view returns (address) {
+        return bills[billId].beneficiary;
     }
 }

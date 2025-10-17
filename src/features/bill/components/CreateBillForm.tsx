@@ -28,6 +28,10 @@ export function CreateBillForm({ onCreateBill }: CreateBillFormProps) {
     return keccak256(toBytes('mock-bill-id'));
   }, []);
 
+  const mockBeneficiary = useMemo(() => {
+    return (address || '0x0000000000000000000000000000000000000000') as `0x${string}`;
+  }, [address]);
+
   const mockParticipants = useMemo(() => {
     return address ? [address as `0x${string}`] : [];
   }, [address]);
@@ -43,7 +47,7 @@ export function CreateBillForm({ onCreateBill }: CreateBillFormProps) {
     data: encodeFunctionData({
       abi: ESCROW_ABI,
       functionName: 'createBill',
-      args: [mockEscrowBillId, mockParticipants, mockAmounts],
+      args: [mockEscrowBillId, mockBeneficiary, mockParticipants, mockAmounts],
     }),
     chainId: baseSepolia.id,
     query: {

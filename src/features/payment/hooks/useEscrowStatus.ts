@@ -118,12 +118,13 @@ export function useEscrowStatus(escrowBillId?: string) {
   const escrowStatus: EscrowStatus | null = data
     ? {
         creator: data[0],
-        totalAmount: data[1],
-        participantCount: Number(data[2]),
-        paidCount: Number(data[3]),
-        settled: data[4],
-        cancelled: data[5],
-        deadline: Number(data[6]),
+        beneficiary: data[1],
+        totalAmount: data[2],
+        participantCount: Number(data[3]),
+        paidCount: Number(data[4]),
+        settled: data[5],
+        cancelled: data[6],
+        deadline: Number(data[7]),
       }
     : null;
 

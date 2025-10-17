@@ -4,17 +4,19 @@ import { useState, useMemo, useEffect } from 'react';
 import { useAccount, useEstimateGas } from 'wagmi';
 import { ESCROW_ABI, ESCROW_CONTRACT_ADDRESS } from '@/lib/config/escrow';
 import { baseSepolia } from 'wagmi/chains';
-import { encodeFunctionData, formatEther, keccak256, toBytes, parseEther, createPublicClient, http } from 'viem';
+import { encodeFunctionData, formatEther, keccak256, toBytes, parseEther, createPublicClient, http, isAddress } from 'viem';
 import { formatEthAmount, formatGwei } from '@/lib/utils/formatNumber';
 import { AppKitButton } from '@/components/AppKitButton';
 
 interface CreateBillFormRetroProps {
-  onCreateBill: (title: string, creatorAddress: string, escrowEnabled: boolean) => void;
+  onCreateBill: (title: string, creatorAddress: string, escrowEnabled: boolean, beneficiary?: string) => void;
 }
 
 export function CreateBillFormRetro({ onCreateBill }: CreateBillFormRetroProps) {
   const [title, setTitle] = useState('');
   const [escrowEnabled, setEscrowEnabled] = useState(false);
+  const [useDifferentBeneficiary, setUseDifferentBeneficiary] = useState(false);
+  const [beneficiaryAddress, setBeneficiaryAddress] = useState('');
   const [gasPrice, setGasPrice] = useState<bigint | null>(null);
   const [isLoadingGasPrice, setIsLoadingGasPrice] = useState(false);
   const { address, isConnected } = useAccount();
@@ -59,11 +61,11 @@ export function CreateBillFormRetro({ onCreateBill }: CreateBillFormRetroProps) 
   const { data: gasEstimate, isLoading: isEstimatingGas } = useEstimateGas({
     to: ESCROW_CONTRACT_ADDRESS,
     account: address,
-    data: encodeFunctionData({
+    data: address ? encodeFunctionData({
       abi: ESCROW_ABI,
       functionName: 'createBill',
-      args: [mockEscrowBillId, mockParticipants, mockAmounts],
-    }),
+      args: [mockEscrowBillId, address as `0x${string}`, mockParticipants, mockAmounts],
+    }) : undefined,
     chainId: baseSepolia.id,
     query: {
       enabled: isConnected && escrowEnabled && !!address,
@@ -89,9 +91,14 @@ export function CreateBillFormRetro({ onCreateBill }: CreateBillFormRetroProps) 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (title.trim() && address) {
-      onCreateBill(title, address, escrowEnabled);
+      const finalBeneficiary = useDifferentBeneficiary && beneficiaryAddress 
+        ? beneficiaryAddress 
+        : undefined;
+      onCreateBill(title, address, escrowEnabled, finalBeneficiary);
       setTitle('');
       setEscrowEnabled(false);
+      setUseDifferentBeneficiary(false);
+      setBeneficiaryAddress('');
     }
   };
 
@@ -140,6 +147,39 @@ export function CreateBillFormRetro({ onCreateBill }: CreateBillFormRetroProps) 
             What&apos;s this?
           </button>
         </div>
+
+        {/* Beneficiary selection */}
+        {escrowEnabled && (
+          <div style={{ marginTop: '8px', paddingLeft: '20px' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', marginBottom: '4px' }}>
+              <input
+                type="checkbox"
+                className="retro-checkbox"
+                checked={useDifferentBeneficiary}
+                onChange={(e) => setUseDifferentBeneficiary(e.target.checked)}
+              />
+              <span style={{ fontSize: '11px' }}>
+                Send funds to different address
+              </span>
+            </label>
+            
+            {useDifferentBeneficiary && (
+              <div style={{ marginTop: '4px' }}>
+                <input
+                  type="text"
+                  className="retro-input"
+                  placeholder="0x... (beneficiary address)"
+                  value={beneficiaryAddress}
+                  onChange={(e) => setBeneficiaryAddress(e.target.value)}
+                  style={{ width: '100%', fontSize: '11px' }}
+                />
+                <div style={{ fontSize: '10px', color: '#666', marginTop: '2px' }}>
+                  💡 This address will receive all funds when everyone pays
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Gas estimate display */}
@@ -175,12 +215,23 @@ export function CreateBillFormRetro({ onCreateBill }: CreateBillFormRetroProps) 
 
       <button
         type="submit"
-        disabled={!address}
+        disabled={!address || (useDifferentBeneficiary && (!beneficiaryAddress || !isAddress(beneficiaryAddress)))}
         className="retro-button"
         style={{ width: '100%' }}
       >
         Create Bill
       </button>
+      
+      {useDifferentBeneficiary && beneficiaryAddress && !isAddress(beneficiaryAddress) && (
+        <div style={{ 
+          marginTop: '4px', 
+          fontSize: '10px', 
+          color: '#ff0000',
+          textAlign: 'center'
+        }}>
+          ⚠️ Invalid Ethereum address
+        </div>
+      )}
     </form>
   );
 }

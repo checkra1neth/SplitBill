@@ -12,6 +12,7 @@ export const ESCROW_ABI = [
     stateMutability: 'nonpayable',
     inputs: [
       { name: 'billId', type: 'bytes32' },
+      { name: 'beneficiary', type: 'address' },
       { name: 'participants', type: 'address[]' },
       { name: 'shares', type: 'uint256[]' },
     ],
@@ -33,6 +34,7 @@ export const ESCROW_ABI = [
     inputs: [{ name: 'billId', type: 'bytes32' }],
     outputs: [
       { name: 'creator', type: 'address' },
+      { name: 'beneficiary', type: 'address' },
       { name: 'totalAmount', type: 'uint256' },
       { name: 'participantCount', type: 'uint256' },
       { name: 'paidCount', type: 'uint256' },
@@ -136,6 +138,14 @@ export const ESCROW_ABI = [
     ],
     outputs: [{ name: '', type: 'uint256' }],
   },
+  // getBeneficiary function
+  {
+    name: 'getBeneficiary',
+    type: 'function',
+    stateMutability: 'view',
+    inputs: [{ name: 'billId', type: 'bytes32' }],
+    outputs: [{ name: '', type: 'address' }],
+  },
   // Events
   {
     name: 'BillCreated',
@@ -143,6 +153,7 @@ export const ESCROW_ABI = [
     inputs: [
       { name: 'billId', type: 'bytes32', indexed: true },
       { name: 'creator', type: 'address', indexed: true },
+      { name: 'beneficiary', type: 'address', indexed: true },
       { name: 'totalAmount', type: 'uint256', indexed: false },
       { name: 'deadline', type: 'uint256', indexed: false },
     ],

@@ -7,6 +7,11 @@ import { useRouter } from 'next/navigation';
 import { useEscrow } from '@/features/payment/hooks/useEscrow';
 import { useToast } from '@/lib/providers/ToastProvider';
 import { ClientTime } from '@/components/ClientTime';
+import { useAccount } from 'wagmi';
+import { UserStatsCard } from '@/components/UserStatsCard';
+import { BillsByTagSearch } from '@/components/BillsByTagSearch';
+import { UserBillsList } from '@/components/UserBillsList';
+import { isMetadataRegistryConfigured } from '@/lib/config/metadata';
 import './retro.css';
 
 export default function Home() {
@@ -14,10 +19,12 @@ export default function Home() {
   const { hash, isPending, isConfirming, isSuccess, error } = useEscrow();
   const { showToast } = useToast();
   const router = useRouter();
+  const { address } = useAccount();
   const [creatingBill, setCreatingBill] = useState(false);
   const [pendingBillId, setPendingBillId] = useState<string | null>(null);
   const [pendingEscrowBillId, setPendingEscrowBillId] = useState<string | null>(null);
   const hasShownSuccessToast = useRef(false);
+  const metadataEnabled = isMetadataRegistryConfigured();
 
   // Handle transaction success
   useEffect(() => {
@@ -69,10 +76,16 @@ export default function Home() {
     title: string,
     creatorAddress: string,
     escrowEnabled: boolean,
+    beneficiary?: string,
   ) => {
     try {
       setCreatingBill(true);
       hasShownSuccessToast.current = false;
+
+      // Store beneficiary in localStorage if provided (will be used when activating escrow)
+      if (beneficiary && escrowEnabled) {
+        localStorage.setItem('pendingBeneficiary', beneficiary);
+      }
 
       // Create bill locally first
       const bill = createBill(title, creatorAddress, escrowEnabled);
@@ -85,8 +98,11 @@ export default function Home() {
       // If escrow is enabled, show info message
       // Escrow contract will be created after adding items and participants
       if (escrowEnabled) {
+        const beneficiaryMsg = beneficiary 
+          ? ` Funds will be sent to ${beneficiary.slice(0, 6)}...${beneficiary.slice(-4)}`
+          : '';
         showToast({
-          message: 'Bill created! Add items and participants to activate escrow',
+          message: `Bill created! Add items and participants to activate escrow.${beneficiaryMsg}`,
           type: 'success',
         });
       } else {
@@ -194,6 +210,21 @@ export default function Home() {
               <CreateBillFormRetro onCreateBill={handleCreateBill} />
             </div>
           </div>
+
+          {/* User Stats */}
+          {metadataEnabled && address && (
+            <UserStatsCard address={address} />
+          )}
+
+          {/* User Bills List */}
+          {metadataEnabled && address && (
+            <UserBillsList address={address} />
+          )}
+
+          {/* Search by Tags */}
+          {metadataEnabled && (
+            <BillsByTagSearch />
+          )}
 
           {/* Features */}
           <div className="retro-group">

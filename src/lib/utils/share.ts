@@ -65,7 +65,13 @@ export function decodeBillFromShare(encoded: string): Bill | null {
   }
 }
 
-export function buildShareableBillUrl(bill: Bill, origin: string): string {
+export function buildShareableBillUrl(bill: Bill, origin: string, isPublished?: boolean): string {
+  // If bill is published on-chain, use short URL without share parameter
+  if (isPublished) {
+    return `${origin}/bill/${bill.id}`;
+  }
+  
+  // Otherwise, include full bill data in URL for sharing
   const encoded = encodeBillForShare(bill);
   return `${origin}/bill/${bill.id}?share=${encoded}`;
 }

@@ -69,16 +69,17 @@ export function useEscrowBillInfo(escrowBillId: string) {
     },
   });
 
-  const billInfo = data as [string, bigint, bigint, bigint, boolean, boolean, bigint] | undefined;
+  const billInfo = data as [string, string, bigint, bigint, bigint, boolean, boolean, bigint] | undefined;
 
   return {
     creator: billInfo?.[0] as string | undefined,
-    totalAmount: billInfo?.[1] as bigint | undefined,
-    participantCount: billInfo?.[2] ? Number(billInfo[2]) : undefined,
-    paidCount: billInfo?.[3] ? Number(billInfo[3]) : undefined,
-    settled: billInfo?.[4] as boolean | undefined,
-    cancelled: billInfo?.[5] as boolean | undefined,
-    deadline: billInfo?.[6] as bigint | undefined,
+    beneficiary: billInfo?.[1] as string | undefined,
+    totalAmount: billInfo?.[2] as bigint | undefined,
+    participantCount: billInfo?.[3] ? Number(billInfo[3]) : undefined,
+    paidCount: billInfo?.[4] ? Number(billInfo[4]) : undefined,
+    settled: billInfo?.[5] as boolean | undefined,
+    cancelled: billInfo?.[6] as boolean | undefined,
+    deadline: billInfo?.[7] as bigint | undefined,
     isLoading,
     error,
     refetch,

@@ -106,6 +106,19 @@ export function EscrowStatusDisplay({
             )}
           </span>
         </p>
+        {escrowStatus.beneficiary && (
+          <p className="mt-1">
+            Funds recipient:{' '}
+            <span className="font-mono text-xs">
+              {escrowStatus.beneficiary.slice(0, 6)}...{escrowStatus.beneficiary.slice(-4)}
+            </span>
+            {escrowStatus.beneficiary !== escrowStatus.creator && (
+              <span className="ml-1 text-xs text-blue-600 dark:text-blue-400">
+                (custom)
+              </span>
+            )}
+          </p>
+        )}
       </div>
 
       {escrowStatus.settled && (
@@ -114,7 +127,7 @@ export function EscrowStatusDisplay({
             ✅ Bill Settled Successfully!
           </p>
           <p className="mt-1 text-xs text-green-700 dark:text-green-300">
-            All funds have been automatically transferred to the bill creator. The escrow contract has completed its job.
+            All funds have been automatically transferred to the recipient. The escrow contract has completed its job.
           </p>
         </div>
       )}
@@ -125,7 +138,7 @@ export function EscrowStatusDisplay({
             ⏳ Settlement in Progress...
           </p>
           <p className="mt-1 text-xs text-yellow-700 dark:text-yellow-300">
-            All participants have paid! The contract is automatically transferring funds to the bill creator.
+            All participants have paid! The contract is automatically transferring funds to the recipient.
           </p>
         </div>
       )}

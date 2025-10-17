@@ -18,6 +18,9 @@ import '../../retro.css';
 import { usePublishBillMetadata } from '@/features/bill/hooks/useBillMetadata';
 import { useBillMetadata } from '@/features/bill/hooks/useBillMetadata';
 import { isMetadataRegistryConfigured } from '@/lib/config/metadata';
+import { PublishBillButton } from '@/components/PublishBillButton';
+import { BillRating } from '@/components/BillRating';
+import { AccessControlPanel } from '@/components/AccessControlPanel';
 import { ActivateEscrowButton } from '@/components/ActivateEscrowButton';
 import { ParticipantPaymentStatus } from '@/features/bill/components/ParticipantPaymentStatus';
 import { EscrowPaymentProgress } from '@/features/bill/components/EscrowPaymentProgress';
@@ -54,7 +57,7 @@ export default function BillPage() {
   const [hasProcessedShareLink, setHasProcessedShareLink] = useState(false);
   const metadataRegistryEnabled = isMetadataRegistryConfigured();
   const { metadata: chainBillSnapshot, owner: metadataOwner, refetch: refetchMetadata } = useBillMetadata(billId);
-  const { publish: publishMetadata, isPending: isPublishingMetadata, isConfirming: isConfirmingMetadata, isSuccess: isMetadataPublishedTx, error: publishMetadataError, txHash: publishTxHash } = usePublishBillMetadata();
+  const { isPending: isPublishingMetadata, isConfirming: isConfirmingMetadata, isSuccess: isMetadataPublishedTx, error: publishMetadataError } = usePublishBillMetadata();
   const [hasNotifiedPublishSuccess, setHasNotifiedPublishSuccess] = useState(false);
   const [hasNotifiedPublishError, setHasNotifiedPublishError] = useState(false);
   const [isQrExpanded, setIsQrExpanded] = useState(false);
@@ -110,8 +113,10 @@ export default function BillPage() {
     }
   }, [searchParams, hasProcessedShareLink, showToast, router, billId, refreshBill]);
 
+  // Load bill from blockchain if not in localStorage
   useEffect(() => {
     if (!bill && chainBillSnapshot) {
+      console.log('Loading bill from blockchain metadata:', chainBillSnapshot);
       saveBill(chainBillSnapshot);
       refreshBill();
     }
@@ -130,7 +135,27 @@ export default function BillPage() {
     if (!isMetadataPublishedTx || hasNotifiedPublishSuccess) return;
     setHasNotifiedPublishSuccess(true);
     showToast({ message: 'Share data published onchain. Link is ready!', type: 'success' });
+    
+    // Refetch immediately
     refetchMetadata();
+    
+    // Refetch multiple times to ensure blockchain state is updated
+    const timers = [
+      setTimeout(() => {
+        console.log('Refetching metadata (attempt 1)...');
+        refetchMetadata();
+      }, 2000),
+      setTimeout(() => {
+        console.log('Refetching metadata (attempt 2)...');
+        refetchMetadata();
+      }, 5000),
+      setTimeout(() => {
+        console.log('Refetching metadata (attempt 3)...');
+        refetchMetadata();
+      }, 10000),
+    ];
+    
+    return () => timers.forEach(timer => clearTimeout(timer));
   }, [isMetadataPublishedTx, hasNotifiedPublishSuccess, showToast, refetchMetadata]);
 
   useEffect(() => {
@@ -139,32 +164,31 @@ export default function BillPage() {
     }
   }, [isSuccess, hash, showToast]);
 
-  const shareUrl = useMemo(() => {
-    if (typeof window === 'undefined' || !bill) return '';
-    return buildShareableBillUrl(bill, window.location.origin);
-  }, [bill]);
 
-  const handlePublishMetadata = async () => {
-    if (!bill) return;
-    try {
-      setHasNotifiedPublishError(false);
-      setHasNotifiedPublishSuccess(false);
-      await publishMetadata(bill);
-      showToast({ message: 'Publishing share data... confirm in your wallet.', type: 'info' });
-    } catch (error) {
-      console.error('Failed to publish metadata:', error);
-      showToast({
-        message: error instanceof Error ? error.message : 'Failed to publish share link.',
-        type: 'error',
-      });
-    }
-  };
 
   const isMetadataPublished = Boolean(metadataOwner && metadataOwner !== '0x0000000000000000000000000000000000000000');
   const isPublishingInFlight = isPublishingMetadata || isConfirmingMetadata;
 
+  // Debug logging
+  useEffect(() => {
+    console.log('Metadata state:', {
+      metadataOwner,
+      isMetadataPublished,
+      chainBillSnapshot: !!chainBillSnapshot,
+    });
+  }, [metadataOwner, isMetadataPublished, chainBillSnapshot]);
+
+  // Build share URL - short if published on-chain, long otherwise
+  const shareUrl = useMemo(() => {
+    if (typeof window === 'undefined' || !bill) return '';
+    const url = buildShareableBillUrl(bill, window.location.origin, isMetadataPublished);
+    console.log('Share URL updated:', { isMetadataPublished, url });
+    return url;
+  }, [bill, isMetadataPublished]);
+
+  // Show loading state while checking blockchain
   if (!bill) {
-    return <BillPageSkeleton />;
+    return <BillPageSkeleton isLoading={!chainBillSnapshot} hasMetadata={isMetadataPublished} />;
   }
 
   const handleAddItem = (e: React.FormEvent) => {
@@ -847,52 +871,45 @@ export default function BillPage() {
                 </div>
                 <div style={{ fontSize: '10px', color: '#666', marginBottom: '8px' }}>
                   Click to copy. Share this link with participants.
+                  {shareUrl.includes('?share=') && (
+                    <div style={{ color: '#ff8800', marginTop: '4px' }}>
+                      ⚠️ Long URL - publish on-chain to shorten
+                    </div>
+                  )}
+                  {!shareUrl.includes('?share=') && isMetadataPublished && (
+                    <div style={{ color: '#008000', marginTop: '4px' }}>
+                      ✓ Short URL - published on-chain
+                    </div>
+                  )}
                 </div>
-                {metadataRegistryEnabled && (
+                {metadataRegistryEnabled && !isMetadataPublished && !isPublishingInFlight && (
+                  <PublishBillButton bill={bill} onPublished={refreshBill} />
+                )}
+                
+                {metadataRegistryEnabled && isPublishingInFlight && (
+                  <div style={{ background: '#ffffcc', border: '1px solid #ff8800', padding: '8px', fontSize: '11px', marginBottom: '12px', textAlign: 'center' }}>
+                    <div style={{ marginBottom: '4px' }}>⏳ Publishing...</div>
+                    <div style={{ fontSize: '10px', color: '#666' }}>
+                      Link will shorten automatically after confirmation
+                    </div>
+                  </div>
+                )}
+                
+                {metadataRegistryEnabled && isMetadataPublished && (
                   <>
-                    {isMetadataPublished ? (
-                      <div style={{ background: '#e0ffe0', border: '1px solid #008000', padding: '8px', fontSize: '11px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
-                          <span style={{ color: '#00ff00', fontSize: '14px', fontWeight: 'bold' }}>✓</span>
-                          <strong>Published Onchain</strong>
-                        </div>
-                        <div style={{ fontSize: '10px', color: '#666', marginBottom: '6px' }}>
-                          Bill data is permanently stored in blockchain. Anyone with the link can access it even if local storage is cleared.
-                        </div>
-                        {publishTxHash && (
-                          <a
-                            href={`https://sepolia.basescan.org/tx/${publishTxHash}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style={{ 
-                              color: '#0000ff', 
-                              textDecoration: 'underline', 
-                              fontSize: '10px',
-                              display: 'block',
-                              marginTop: '4px'
-                            }}
-                          >
-                            View transaction on BaseScan →
-                          </a>
-                        )}
-                        <div style={{ 
-                          marginTop: '8px', 
-                          padding: '6px',
-                          background: '#ffffff',
-                          border: '1px solid #808080',
-                          fontSize: '10px'
-                        }}>
-                          <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>💡 What this means:</div>
-                          <div style={{ marginBottom: '2px' }}>• Bill is backed up in blockchain</div>
-                          <div style={{ marginBottom: '2px' }}>• Data cannot be lost or modified</div>
-                          <div>• Accessible forever via share link</div>
-                        </div>
+                    <div style={{ background: '#e0ffe0', border: '1px solid #008000', padding: '8px', fontSize: '11px', marginBottom: '12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                        <span style={{ color: '#00ff00', fontSize: '14px', fontWeight: 'bold' }}>✓</span>
+                        <strong>Published Onchain</strong>
                       </div>
-                    ) : (
-                      <button onClick={handlePublishMetadata} disabled={isPublishingInFlight} className="retro-button" style={{ width: '100%' }}>
-                        {isPublishingInFlight ? 'Publishing...' : 'Publish Onchain'}
-                      </button>
-                    )}
+                      <div style={{ fontSize: '10px', color: '#666' }}>
+                        Bill data is permanently stored in blockchain. Link is shortened.
+                      </div>
+                    </div>
+                    
+                    <AccessControlPanel billId={billId} />
+                    
+                    <BillRating billId={billId} />
                   </>
                 )}
               </div>
@@ -930,18 +947,45 @@ export default function BillPage() {
 }
 
 
-function BillPageSkeleton() {
+function BillPageSkeleton({ isLoading, hasMetadata }: { isLoading: boolean; hasMetadata: boolean }) {
+  const router = useRouter();
+  
   return (
     <div className="retro-body" style={{ minHeight: '100vh', padding: '20px' }}>
       <div style={{ maxWidth: '1000px', margin: '0 auto', textAlign: 'center', paddingTop: '100px' }}>
         <div className="retro-window" style={{ display: 'inline-block', minWidth: '300px' }}>
           <div className="retro-title-bar">
             <div className="retro-title-text">
-              <span>⏳ Loading...</span>
+              <span>{isLoading ? '⏳ Loading...' : '❌ Not Found'}</span>
             </div>
           </div>
           <div className="retro-content" style={{ padding: '40px', fontSize: '11px' }}>
-            Loading bill data...
+            {isLoading ? (
+              <>
+                <div style={{ marginBottom: '12px' }}>Loading bill data...</div>
+                {hasMetadata && (
+                  <div style={{ fontSize: '10px', color: '#666' }}>
+                    Found on-chain metadata, loading...
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                <div style={{ marginBottom: '12px', fontSize: '12px', fontWeight: 'bold' }}>
+                  Bill not found
+                </div>
+                <div style={{ marginBottom: '16px', color: '#666' }}>
+                  This bill doesn&apos;t exist or hasn&apos;t been shared with you.
+                </div>
+                <button 
+                  onClick={() => router.push('/')}
+                  className="retro-button"
+                  style={{ width: '100%' }}
+                >
+                  ← Back to Home
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>

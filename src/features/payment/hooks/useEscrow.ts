@@ -129,12 +129,14 @@ export function useEscrow() {
    * Create escrow bill in smart contract
    * @param bill - The bill to create in escrow
    * @param shares - Array of participant shares
+   * @param beneficiary - Address that will receive the funds (optional, defaults to bill creator)
    * @returns The escrow bill ID (bytes32 hash)
    * @throws Error if wallet not connected or wrong network
    */
   const createEscrowBill = async (
     bill: Bill,
     shares: ParticipantShare[],
+    beneficiary?: string,
   ): Promise<string> => {
     try {
       // Clear previous errors
@@ -154,12 +156,18 @@ export function useEscrow() {
       
       const { participants, amounts } = prepareEscrowData(bill, shares, ethPrice);
 
+      // Use provided beneficiary or default to bill creator (current wallet address)
+      if (!beneficiary && !address) {
+        throw new Error('Beneficiary address is required');
+      }
+      const beneficiaryAddress = (beneficiary || address) as `0x${string}`;
+
       // Call contract to create bill
       writeContract({
         address: ESCROW_CONTRACT_ADDRESS,
         abi: ESCROW_ABI,
         functionName: 'createBill',
-        args: [escrowBillId, participants, amounts],
+        args: [escrowBillId, beneficiaryAddress, participants, amounts],
         chainId: baseSepolia.id,
       });
 

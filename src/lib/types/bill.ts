@@ -42,6 +42,7 @@ export interface ParticipantShare {
  */
 export interface EscrowStatus {
   creator: string;
+  beneficiary: string; // Who receives the funds
   totalAmount: bigint;
   participantCount: number;
   paidCount: number;

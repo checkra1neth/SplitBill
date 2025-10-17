@@ -90,11 +90,20 @@ export function ActivateEscrowButton({
         type: 'info',
       });
 
+      // Get beneficiary from localStorage if it was set during bill creation
+      const storedBeneficiary = localStorage.getItem('pendingBeneficiary');
+      const beneficiary = storedBeneficiary || undefined;
+
       // Create escrow bill in contract (it will fetch real-time ETH price internally)
-      const escrowBillId = await createEscrowBill(bill, payableShares);
+      const escrowBillId = await createEscrowBill(bill, payableShares, beneficiary);
 
       if (escrowBillId) {
         setPendingEscrowBillId(escrowBillId);
+        
+        // Clear stored beneficiary after use
+        if (storedBeneficiary) {
+          localStorage.removeItem('pendingBeneficiary');
+        }
         
         showToast({
           message: 'Transaction submitted! Waiting for confirmation...',
