@@ -140,14 +140,25 @@ export default function Home() {
   };
 
   const handleMinimize = () => {
-    setIsMinimized(!isMinimized);
+    const newMinimizedState = !isMinimized;
+    setIsMinimized(newMinimizedState);
+    
+    // If minimizing and window is maximized, reset maximize state
+    if (newMinimizedState && isMaximized) {
+      setIsMaximized(false);
+    }
+    
     showToast({
-      message: isMinimized ? 'Window restored' : 'Window minimized',
+      message: newMinimizedState ? 'Window minimized' : 'Window restored',
       type: 'info'
     });
   };
 
   const handleMaximize = () => {
+    // If window is minimized, restore it first
+    if (isMinimized) {
+      setIsMinimized(false);
+    }
     setIsMaximized(!isMaximized);
   };
 
