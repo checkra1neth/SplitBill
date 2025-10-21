@@ -58,7 +58,7 @@ export default function BillPage() {
   const metadataRegistryEnabled = isMetadataRegistryConfigured();
   const { metadata: chainBillSnapshot, owner: metadataOwner, refetch: refetchMetadata } = useBillMetadata(billId);
   const { isPending: isPublishingMetadata, isConfirming: isConfirmingMetadata, isSuccess: isMetadataPublishedTx, error: publishMetadataError } = usePublishBillMetadata();
-  
+
   // Handler for when bill is published - refresh both bill and metadata
   const handleBillPublished = () => {
     console.log('Bill published! Refreshing metadata...');
@@ -74,7 +74,7 @@ export default function BillPage() {
     participantName: string;
   }>({ isOpen: false, participantId: '', participantName: '' });
   const [isBillComplete, setIsBillComplete] = useState(false);
-  
+
   // Get bill status from contract
   const { cancelled, settled } = useEscrowBillInfo(bill?.escrowBillId || '');
 
@@ -142,11 +142,11 @@ export default function BillPage() {
     if (!isMetadataPublishedTx || hasNotifiedPublishSuccess) return;
     setHasNotifiedPublishSuccess(true);
     showToast({ message: 'Share data published onchain. Link is ready!', type: 'success' });
-    
+
     // Refetch immediately and multiple times to ensure blockchain state is updated
     console.log('Transaction confirmed! Starting metadata refresh cycle...');
     refetchMetadata();
-    
+
     const timers = [
       setTimeout(() => {
         console.log('Refetching metadata (attempt 1)...');
@@ -165,7 +165,7 @@ export default function BillPage() {
         refetchMetadata();
       }, 5000),
     ];
-    
+
     return () => timers.forEach(timer => clearTimeout(timer));
   }, [isMetadataPublishedTx, hasNotifiedPublishSuccess, showToast, refetchMetadata]);
 
@@ -193,9 +193,9 @@ export default function BillPage() {
   const shareUrl = useMemo(() => {
     if (typeof window === 'undefined' || !bill) return '';
     const url = buildShareableBillUrl(bill, window.location.origin, isMetadataPublished);
-    console.log('Share URL updated:', { 
-      isMetadataPublished, 
-      metadataOwner, 
+    console.log('Share URL updated:', {
+      isMetadataPublished,
+      metadataOwner,
       url,
       isShortUrl: !url.includes('?share=')
     });
@@ -248,10 +248,10 @@ export default function BillPage() {
 
   const handleUpdateTipTax = () => {
     const subtotal = bill.items.reduce((sum, item) => sum + item.amount, 0);
-    
+
     let tipValue = 0;
     let taxValue = 0;
-    
+
     if (tipMode === 'percent') {
       const percent = Number.parseFloat(tipPercent) || 0;
       tipValue = (subtotal * percent) / 100;
@@ -259,7 +259,7 @@ export default function BillPage() {
     } else {
       tipValue = Number.parseFloat(tip) || 0;
     }
-    
+
     if (taxMode === 'percent') {
       const percent = Number.parseFloat(taxPercent) || 0;
       taxValue = (subtotal * percent) / 100;
@@ -267,7 +267,7 @@ export default function BillPage() {
     } else {
       taxValue = Number.parseFloat(tax) || 0;
     }
-    
+
     updateTipAndTax(tipValue, taxValue);
     showToast({ message: 'Tip and tax updated', type: 'success' });
   };
@@ -317,12 +317,12 @@ export default function BillPage() {
 
   return (
     <div className="retro-body" style={{ minHeight: '100vh', padding: '20px', paddingBottom: '60px' }}>
-      <div style={{ 
-        maxWidth: '1000px', 
-        margin: '0 auto', 
-        display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 400px), 1fr))', 
-        gap: '16px' 
+      <div style={{
+        maxWidth: '1000px',
+        margin: '0 auto',
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 400px), 1fr))',
+        gap: '16px'
       }}>
         {/* Left Column */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -387,7 +387,7 @@ export default function BillPage() {
               {/* Tip Section */}
               <div className="retro-group" style={{ marginBottom: '12px' }}>
                 <div className="retro-group-title">Tip</div>
-                
+
                 {/* Mode Toggle */}
                 <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', fontSize: '11px' }}>
@@ -453,7 +453,7 @@ export default function BillPage() {
               {/* Tax Section */}
               <div className="retro-group" style={{ marginBottom: '12px' }}>
                 <div className="retro-group-title">Tax</div>
-                
+
                 {/* Mode Toggle */}
                 <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', fontSize: '11px' }}>
@@ -543,7 +543,7 @@ export default function BillPage() {
                 <div style={{ marginBottom: '12px' }}>
                   {bill.escrowBillId ? (
                     <>
-                      <div style={{ 
+                      <div style={{
                         background: cancelled ? '#ffe0e0' : (isBillComplete || settled) ? '#e0ffe0' : '#ffffff',
                         border: cancelled ? '2px solid #ff0000' : (isBillComplete || settled) ? '2px solid #00ff00' : '1px solid #808080',
                         padding: '8px',
@@ -555,10 +555,10 @@ export default function BillPage() {
                             {cancelled ? '❌' : (isBillComplete || settled) ? '🎉' : '🔒'}
                           </span>
                           <strong>
-                            {cancelled 
-                              ? 'Bill Cancelled - Refunds Available' 
-                              : (isBillComplete || settled) 
-                                ? 'Bill Complete!' 
+                            {cancelled
+                              ? 'Bill Cancelled - Refunds Available'
+                              : (isBillComplete || settled)
+                                ? 'Bill Complete!'
                                 : 'Escrow Protection Active'
                             }
                           </strong>
@@ -580,19 +580,19 @@ export default function BillPage() {
                           onAllPaid={() => setIsBillComplete(true)}
                         />
                       </div>
-                      
+
                       {/* Deadline Display */}
                       <div style={{ marginBottom: '12px' }}>
                         <EscrowDeadlineDisplay escrowBillId={bill.escrowBillId} />
                       </div>
-                      
+
                       {/* Refund Claim Button (for participants) */}
                       {address && (
                         <div style={{ marginBottom: '12px' }}>
                           <RefundClaimButton escrowBillId={bill.escrowBillId} />
                         </div>
                       )}
-                      
+
                       {/* Management Panel (for creator) */}
                       <div style={{ marginBottom: '12px' }}>
                         <EscrowManagementPanel
@@ -602,7 +602,7 @@ export default function BillPage() {
                       </div>
                     </>
                   ) : (
-                    <div style={{ 
+                    <div style={{
                       background: '#ffff00',
                       border: '2px solid #ff8800',
                       padding: '8px',
@@ -615,8 +615,8 @@ export default function BillPage() {
                       <div style={{ fontSize: '10px', marginBottom: '8px' }}>
                         Add all items and participants, then activate escrow to secure payments onchain.
                       </div>
-                      <ActivateEscrowButton 
-                        bill={bill} 
+                      <ActivateEscrowButton
+                        bill={bill}
                         onActivated={refreshBill}
                         updateEscrowMetadata={updateEscrowMetadata}
                         ethPrice={ethPrice}
@@ -685,7 +685,7 @@ export default function BillPage() {
                       const participantName = participant.basename || participant.name || `${participant.address.slice(0, 6)}...${participant.address.slice(-4)}`;
                       const isCreator = participant.address.toLowerCase() === bill.createdBy.toLowerCase();
                       const canRemove = !isCreator && !bill.escrowBillId;
-                      
+
                       // Show payment status for escrow bills
                       if (bill.escrowEnabled && bill.escrowBillId) {
                         return (
@@ -698,7 +698,7 @@ export default function BillPage() {
                           />
                         );
                       }
-                      
+
                       // Regular display for non-escrow bills
                       return (
                         <div key={participant.id} className="retro-list-item" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -792,9 +792,9 @@ export default function BillPage() {
 
               {/* Bill Complete or Cancelled Actions */}
               {(isBillComplete || settled || cancelled) && (
-                <button 
+                <button
                   onClick={() => router.push('/')}
-                  className="retro-button" 
+                  className="retro-button"
                   style={{ width: '100%', marginTop: '12px' }}
                 >
                   ← Back to Home
@@ -803,11 +803,11 @@ export default function BillPage() {
 
               {!address && (
                 <div style={{ marginTop: '12px' }}>
-                  <div style={{ 
-                    background: '#ffff00', 
-                    border: '2px solid #ff8800', 
-                    padding: '8px', 
-                    marginBottom: '8px', 
+                  <div style={{
+                    background: '#ffff00',
+                    border: '2px solid #ff8800',
+                    padding: '8px',
+                    marginBottom: '8px',
                     fontSize: '11px',
                     textAlign: 'center'
                   }}>
@@ -830,9 +830,9 @@ export default function BillPage() {
               </div>
               <div className="retro-content">
                 {/* QR Code Toggle Button */}
-                <button 
+                <button
                   onClick={() => setIsQrExpanded(!isQrExpanded)}
-                  className="retro-button" 
+                  className="retro-button"
                   style={{ width: '100%', marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}
                 >
                   <span>{isQrExpanded ? '▼' : '▶'}</span>
@@ -842,8 +842,8 @@ export default function BillPage() {
                 {/* QR Code - Collapsible */}
                 {isQrExpanded && (
                   <>
-                    <div style={{ 
-                      background: '#ffffff', 
+                    <div style={{
+                      background: '#c0c0c0',
                       border: '2px inset #808080',
                       padding: '12px',
                       marginBottom: '12px',
@@ -851,21 +851,27 @@ export default function BillPage() {
                       justifyContent: 'center',
                       alignItems: 'center'
                     }}>
-                      <div style={{ 
+                      <div style={{
                         background: '#ffffff',
                         padding: '8px',
-                        border: '1px solid #000000'
+                        border: '2px outset #808080',
+                        boxShadow: '2px 2px 0 rgba(0,0,0,0.2)'
                       }}>
                         <QRCode
                           value={shareUrl}
                           size={160}
                           level="M"
-                          style={{ display: 'block' }}
+                          fgColor="#000080"
+                          bgColor="#ffffff"
+                          style={{
+                            display: 'block',
+                            imageRendering: 'pixelated'
+                          }}
                         />
                       </div>
                     </div>
                     <div style={{ fontSize: '10px', color: '#666', textAlign: 'center', marginBottom: '12px' }}>
-                      Scan QR code to open bill
+                      📱 Scan QR code to open bill
                     </div>
                   </>
                 )}
@@ -901,7 +907,7 @@ export default function BillPage() {
                 {metadataRegistryEnabled && !isMetadataPublished && !isPublishingInFlight && (
                   <PublishBillButton bill={bill} onPublished={handleBillPublished} />
                 )}
-                
+
                 {metadataRegistryEnabled && isPublishingInFlight && (
                   <div style={{ background: '#ffffcc', border: '1px solid #ff8800', padding: '8px', fontSize: '11px', marginBottom: '12px', textAlign: 'center' }}>
                     <div style={{ marginBottom: '4px' }}>⏳ Publishing...</div>
@@ -910,7 +916,7 @@ export default function BillPage() {
                     </div>
                   </div>
                 )}
-                
+
                 {metadataRegistryEnabled && isMetadataPublished && (
                   <>
                     <div style={{ background: '#e0ffe0', border: '1px solid #008000', padding: '8px', fontSize: '11px', marginBottom: '12px' }}>
@@ -922,9 +928,9 @@ export default function BillPage() {
                         Bill data is permanently stored in blockchain. Link is shortened.
                       </div>
                     </div>
-                    
+
                     <AccessControlPanel billId={billId} />
-                    
+
                     <BillRating billId={billId} />
                   </>
                 )}
@@ -965,7 +971,7 @@ export default function BillPage() {
 
 function BillPageSkeleton({ isLoading, hasMetadata }: { isLoading: boolean; hasMetadata: boolean }) {
   const router = useRouter();
-  
+
   return (
     <div className="retro-body" style={{ minHeight: '100vh', padding: '20px' }}>
       <div style={{ maxWidth: '1000px', margin: '0 auto', textAlign: 'center', paddingTop: '100px' }}>
@@ -993,7 +999,7 @@ function BillPageSkeleton({ isLoading, hasMetadata }: { isLoading: boolean; hasM
                 <div style={{ marginBottom: '16px', color: '#666' }}>
                   This bill doesn&apos;t exist or hasn&apos;t been shared with you.
                 </div>
-                <button 
+                <button
                   onClick={() => router.push('/')}
                   className="retro-button"
                   style={{ width: '100%' }}
