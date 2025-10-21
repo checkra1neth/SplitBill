@@ -165,10 +165,18 @@ export default function Home() {
   };
 
   const handleMaximize = () => {
-    // If window is minimized, restore it first
+    // If window is minimized, restore it to previous state
     if (isMinimized) {
       setIsMinimized(false);
+      // Restore the maximize state that was saved before minimizing
+      if (wasMaximizedBeforeMinimize) {
+        setIsMaximized(true);
+      }
+      // Don't toggle - just restore
+      return;
     }
+
+    // Normal maximize toggle when not minimized
     setIsMaximized(!isMaximized);
   };
 
