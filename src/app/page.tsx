@@ -39,6 +39,7 @@ export default function Home() {
   const [isMinimized, setIsMinimized] = useState(false);
   const [isMaximized, setIsMaximized] = useState(false);
   const [showCloseDialog, setShowCloseDialog] = useState(false);
+  const [wasMaximizedBeforeMinimize, setWasMaximizedBeforeMinimize] = useState(false);
 
   // Handle transaction success
   useEffect(() => {
@@ -141,13 +142,22 @@ export default function Home() {
 
   const handleMinimize = () => {
     const newMinimizedState = !isMinimized;
-    setIsMinimized(newMinimizedState);
-    
-    // If minimizing and window is maximized, reset maximize state
-    if (newMinimizedState && isMaximized) {
-      setIsMaximized(false);
+
+    if (newMinimizedState) {
+      // Minimizing: save current maximize state
+      setWasMaximizedBeforeMinimize(isMaximized);
+      if (isMaximized) {
+        setIsMaximized(false);
+      }
+    } else {
+      // Restoring: restore previous maximize state
+      if (wasMaximizedBeforeMinimize) {
+        setIsMaximized(true);
+      }
     }
-    
+
+    setIsMinimized(newMinimizedState);
+
     showToast({
       message: newMinimizedState ? 'Window minimized' : 'Window restored',
       type: 'info'
