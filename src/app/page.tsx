@@ -158,7 +158,14 @@ export default function Home() {
   const handleConfirmClose = () => {
     showToast({ message: 'Goodbye! 👋', type: 'info' });
     setTimeout(() => {
-      window.location.href = 'about:blank';
+      // Try to close the window/tab
+      window.close();
+
+      // If window.close() doesn't work (some browsers block it),
+      // redirect to about:blank as fallback
+      setTimeout(() => {
+        window.location.href = 'about:blank';
+      }, 100);
     }, 500);
   };
 
