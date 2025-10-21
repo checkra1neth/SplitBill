@@ -685,3 +685,31 @@ input[type="range"].retro-slider:focus {
     margin-bottom: 0;
   }
 }
+
+/* Taskbar icon links */
+.retro-taskbar-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: var(--retro-button);
+  border-top: 1px solid var(--retro-border-light);
+  border-left: 1px solid var(--retro-border-light);
+  border-right: 1px solid var(--retro-border-darker);
+  border-bottom: 1px solid var(--retro-border-darker);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.1s;
+}
+
+.retro-taskbar-icon:hover {
+  background: var(--retro-button-hover);
+}
+
+.retro-taskbar-icon:active {
+  border-top: 1px solid var(--retro-border-darker);
+  border-left: 1px solid var(--retro-border-darker);
+  border-right: 1px solid var(--retro-border-light);
+  border-bottom: 1px solid var(--retro-border-light);
+}
