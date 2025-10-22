@@ -21,6 +21,7 @@ import { FaWindows } from 'react-icons/fa';
 import { RetroStartMenu } from '@/components/RetroStartMenu';
 import { RetroMenuBar } from '@/components/RetroMenuBar';
 import { RetroConfirmDialog } from '@/components/RetroConfirmDialog';
+import { RetroSnakeGame } from '@/components/RetroSnakeGame';
 import './retro.css';
 
 export default function Home() {
@@ -200,6 +201,17 @@ export default function Home() {
 
   return (
     <div className="retro-body" style={{ minHeight: '100vh', padding: '20px', paddingBottom: '60px' }}>
+      {/* Easter Egg: Snake Game when minimized */}
+      {isMinimized && (
+        <div style={{
+          maxWidth: '400px',
+          margin: '0 auto',
+          marginTop: '40px'
+        }}>
+          <RetroSnakeGame onClose={() => setIsMinimized(false)} />
+        </div>
+      )}
+
       {/* Main Window */}
       <div
         className="retro-window"
@@ -207,7 +219,8 @@ export default function Home() {
           maxWidth: isMaximized ? '100%' : '640px',
           margin: isMaximized ? '0' : '0 auto',
           width: '100%',
-          transition: 'all 0.2s ease'
+          transition: 'all 0.2s ease',
+          display: isMinimized ? 'none' : 'block'
         }}
       >
         {/* Title Bar */}
