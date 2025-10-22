@@ -1,8 +1,31 @@
 'use client';
 
 import { useState } from 'react';
-import { useBillsByTag } from '@/features/bill/hooks/useBillMetadata';
+import { useBillsByTag, useBillMetadata } from '@/features/bill/hooks/useBillMetadata';
 import Link from 'next/link';
+
+function SearchResultItem({ billId }: { billId: string }) {
+  const { metadata, isLoading } = useBillMetadata(billId, true);
+
+  // Don't show anything while loading - just skip
+  if (isLoading || !metadata) {
+    return null;
+  }
+
+  const billLink = metadata.id || billId;
+  const displayId = billId.slice(0, 10) + '...' + billId.slice(-8);
+
+  return (
+    <div className="retro-list-item">
+      <Link
+        href={`/bill/${billLink}`}
+        style={{ color: '#0000ff', textDecoration: 'underline', fontSize: '11px' }}
+      >
+        {metadata.title || 'Untitled Bill'} ({displayId})
+      </Link>
+    </div>
+  );
+}
 
 const POPULAR_TAGS = [
   'restaurant',
@@ -64,25 +87,35 @@ export function BillsByTagSearch() {
         {/* Results */}
         {selectedTag && (
           <div>
-            <div style={{ fontSize: '11px', fontWeight: 'bold', marginBottom: '8px' }}>
+            <div style={{ fontSize: '11px', fontWeight: 'bold', marginBottom: '8px', color: '#000080' }}>
               Bills tagged with &quot;{selectedTag}&quot;:
             </div>
 
-            {isLoading ? (
-              <div style={{ fontSize: '11px', color: '#666' }}>Loading...</div>
-            ) : billIds.length === 0 ? (
-              <div style={{ fontSize: '11px', color: '#666' }}>No bills found with this tag</div>
+            {billIds.length === 0 ? (
+              <div 
+                style={{ 
+                  fontSize: '11px', 
+                  color: '#666',
+                  padding: '20px',
+                  textAlign: 'center',
+                  background: '#ffffff',
+                  border: '2px inset #808080',
+                  minHeight: '100px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                }}
+              >
+                <div style={{ fontSize: '24px' }}>🔍</div>
+                <div style={{ fontWeight: 'bold' }}>No bills found with this tag</div>
+                <div style={{ fontSize: '10px' }}>Try a different tag or create a bill with this tag</div>
+              </div>
             ) : (
-              <div className="retro-list" style={{ maxHeight: '200px', overflow: 'auto' }}>
+              <div className="retro-list" style={{ maxHeight: '200px', minHeight: '100px', overflow: 'auto' }}>
                 {billIds.map(id => (
-                  <div key={id} className="retro-list-item">
-                    <Link
-                      href={`/bill/${id}`}
-                      style={{ color: '#0000ff', textDecoration: 'underline' }}
-                    >
-                      {id.slice(0, 10)}...{id.slice(-8)}
-                    </Link>
-                  </div>
+                  <SearchResultItem key={id} billId={id} />
                 ))}
               </div>
             )}

@@ -9,15 +9,16 @@ interface UserBillsListProps {
 }
 
 function BillCard({ billId }: { billId: string }) {
-  const { metadata, tags, isPrivate, rating } = useBillMetadata(billId);
+  // billId from useUserBills is already a bytes32 hash
+  const { metadata, tags, isPrivate, rating, isLoading } = useBillMetadata(billId, true);
 
-  // Don't show loading state for individual cards - just skip if not loaded yet
-  if (!metadata) {
+  // Don't show anything while loading - just skip
+  if (isLoading || !metadata) {
     return null;
   }
 
-  // Convert billId (bytes32) to original UUID
-  // For now, just show the hash
+  // Use original bill.id from metadata for the link, fallback to hash for display
+  const billLink = metadata?.id || billId;
   const displayId = billId.slice(0, 10) + '...' + billId.slice(-8);
 
   return (
@@ -34,7 +35,7 @@ function BillCard({ billId }: { billId: string }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
         <div style={{ flex: 1 }}>
           <Link
-            href={`/bill/${billId}`}
+            href={`/bill/${billLink}`}
             style={{
               color: '#0000ff',
               textDecoration: 'underline',
@@ -105,22 +106,86 @@ function BillCard({ billId }: { billId: string }) {
   );
 }
 
+// Helper component to load metadata and enable filtering/sorting
+function BillsListWithMetadata({ billIds, filterTag, sortBy }: { billIds: string[]; filterTag: string; sortBy: 'date' | 'rating' }) {
+  // Load metadata for all bills
+  const billsWithMetadata = billIds.map(billId => {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const { metadata, tags, rating } = useBillMetadata(billId, true);
+    return { billId, metadata, tags, rating };
+  });
+
+  // Filter and sort
+  const processedBills = useMemo(() => {
+    let filtered = billsWithMetadata;
+
+    // Filter by tag
+    if (filterTag) {
+      filtered = filtered.filter(bill => 
+        bill.tags && bill.tags.includes(filterTag)
+      );
+    }
+
+    // Sort
+    const sorted = [...filtered].sort((a, b) => {
+      if (sortBy === 'rating') {
+        const ratingA = a.rating?.average || 0;
+        const ratingB = b.rating?.average || 0;
+        return ratingB - ratingA; // Highest first
+      }
+      // Default: date (newest first) - bills are already in order from contract
+      return 0;
+    });
+
+    return sorted;
+  }, [billsWithMetadata, filterTag, sortBy]);
+
+  if (processedBills.length === 0) {
+    return (
+      <div
+        style={{
+          padding: '20px',
+          textAlign: 'center',
+          fontSize: '11px',
+          color: '#666',
+          background: '#ffffff',
+          border: '2px inset #808080',
+          minHeight: '120px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <div style={{ marginBottom: '8px', fontSize: '24px' }}>📭</div>
+        <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
+          {filterTag ? `No bills with tag "${filterTag}"` : 'No bills published yet'}
+        </div>
+        <div style={{ fontSize: '10px', marginTop: '4px' }}>
+          {filterTag ? 'Try a different tag' : 'Create a bill and publish it on-chain to see it here'}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="retro-list" style={{ maxHeight: '400px', minHeight: '120px', overflow: 'auto' }}>
+      {processedBills.map(({ billId }) => (
+        <BillCard key={billId} billId={billId} />
+      ))}
+    </div>
+  );
+}
+
 export function UserBillsList({ address }: UserBillsListProps) {
   const { billIds, isLoading } = useUserBills(address);
   const [filterTag, setFilterTag] = useState('');
   const [sortBy, setSortBy] = useState<'date' | 'rating'>('date');
 
-  // Get unique tags from all bills (would need to fetch metadata for each)
+  // Get unique tags from all bills
   const availableTags = useMemo(() => {
-    // This is a simplified version - in production, you'd fetch all bills' tags
-    return ['restaurant', 'cafe', 'groceries', 'shopping', 'travel'];
+    return ['restaurant', 'cafe', 'groceries', 'shopping', 'travel', 'dinner', 'friends', 'business'];
   }, []);
-
-  const filteredBillIds = useMemo(() => {
-    if (!filterTag) return billIds;
-    // In production, filter by actually checking bill tags
-    return billIds;
-  }, [billIds, filterTag]);
 
   if (isLoading) {
     return (
@@ -175,30 +240,7 @@ export function UserBillsList({ address }: UserBillsListProps) {
         </div>
 
         {/* Bills list */}
-        {filteredBillIds.length === 0 ? (
-          <div
-            style={{
-              padding: '20px',
-              textAlign: 'center',
-              fontSize: '11px',
-              color: '#666',
-              background: '#f0f0f0',
-              border: '1px solid #808080',
-            }}
-          >
-            <div style={{ marginBottom: '8px' }}>📭</div>
-            <div>No bills published yet</div>
-            <div style={{ fontSize: '10px', marginTop: '4px' }}>
-              Create a bill and publish it on-chain to see it here
-            </div>
-          </div>
-        ) : (
-          <div className="retro-list" style={{ maxHeight: '400px', overflow: 'auto' }}>
-            {filteredBillIds.map(billId => (
-              <BillCard key={billId} billId={billId} />
-            ))}
-          </div>
-        )}
+        <BillsListWithMetadata billIds={billIds} filterTag={filterTag} sortBy={sortBy} />
 
         {/* Info */}
         <div

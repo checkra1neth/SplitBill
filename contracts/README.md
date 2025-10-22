@@ -1,6 +1,32 @@
 # Smart Contracts
 
-## SplitBillEscrow.sol
+## 🔄 Upgradeable Architecture (Recommended)
+
+**Используйте upgradeable версии для production!**
+
+Мы используем **UUPS Proxy Pattern** от OpenZeppelin:
+- ✅ Один адрес контракта навсегда
+- ✅ Обновляемая логика без потери данных
+- ✅ Все bills сохраняются при обновлениях
+- ✅ Готово для mainnet
+
+### Быстрый старт
+
+```bash
+cd contracts
+./deploy-upgradeable.sh
+```
+
+📖 **Полная документация:**
+- [UPGRADEABLE_GUIDE.md](./UPGRADEABLE_GUIDE.md) - Как работает upgradeable
+- [MIGRATION_PLAN.md](./MIGRATION_PLAN.md) - План миграции
+- [COMMANDS_CHEATSHEET.md](./COMMANDS_CHEATSHEET.md) - Все команды
+
+---
+
+## SplitBillEscrow.sol (Legacy)
+
+⚠️ **Устаревшая версия** - используйте `SplitBillEscrowUpgradeable.sol` для новых деплоев
 
 Smart contract for trustless bill settlement on Base blockchain. Holds funds in escrow until all participants pay, then automatically distributes to the bill creator.
 

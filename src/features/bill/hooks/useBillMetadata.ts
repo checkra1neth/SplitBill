@@ -6,9 +6,17 @@ import { Bill } from '@/lib/types/bill';
 import { encodeBillForShare, decodeBillFromShare } from '@/lib/utils/share';
 import { generateEscrowBillId } from '@/lib/utils/escrow';
 
-export function useBillMetadata(billId?: string) {
+export function useBillMetadata(billId?: string, isAlreadyHashed = false) {
   const enabled = Boolean(billId && isMetadataRegistryConfigured());
-  const billHash = useMemo(() => (billId ? generateEscrowBillId(billId) : undefined), [billId]);
+  const billHash = useMemo(() => {
+    if (!billId) return undefined;
+    // If billId is already a bytes32 hash (starts with 0x and is 66 chars), use it directly
+    if (isAlreadyHashed || (billId.startsWith('0x') && billId.length === 66)) {
+      return billId as `0x${string}`;
+    }
+    // Otherwise, hash the UUID
+    return generateEscrowBillId(billId);
+  }, [billId, isAlreadyHashed]);
 
   const { data, isLoading, refetch } = useReadContract({
     address: BILL_METADATA_CONTRACT_ADDRESS,
