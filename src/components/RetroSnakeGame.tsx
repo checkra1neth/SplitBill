@@ -191,11 +191,13 @@ export function RetroSnakeGame({ onClose }: { onClose: () => void }) {
       if (Math.abs(deltaX) > Math.abs(deltaY)) {
         // Horizontal swipe
         if (Math.abs(deltaX) > minSwipeDistance) {
+          e.preventDefault();
           changeDirection(deltaX > 0 ? 'RIGHT' : 'LEFT');
         }
       } else {
         // Vertical swipe
         if (Math.abs(deltaY) > minSwipeDistance) {
+          e.preventDefault();
           changeDirection(deltaY > 0 ? 'DOWN' : 'UP');
         }
       }
@@ -203,10 +205,19 @@ export function RetroSnakeGame({ onClose }: { onClose: () => void }) {
       touchStartRef.current = null;
     };
 
-    window.addEventListener('touchstart', handleTouchStart);
-    window.addEventListener('touchend', handleTouchEnd);
+    const handleTouchMove = (e: TouchEvent) => {
+      // Prevent scrolling while swiping in game area
+      if (touchStartRef.current && gameStarted && !gameOver) {
+        e.preventDefault();
+      }
+    };
+
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    window.addEventListener('touchmove', handleTouchMove, { passive: false });
+    window.addEventListener('touchend', handleTouchEnd, { passive: false });
     return () => {
       window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchmove', handleTouchMove);
       window.removeEventListener('touchend', handleTouchEnd);
     };
   }, [gameStarted, gameOver, changeDirection]);
@@ -446,7 +457,7 @@ export function RetroSnakeGame({ onClose }: { onClose: () => void }) {
           disabled={!gameStarted || gameOver}
           style={{
             padding: '0',
-            fontSize: '20px',
+            fontSize: '16px',
             minWidth: 'auto',
             width: '56px',
             height: '56px',
@@ -463,16 +474,17 @@ export function RetroSnakeGame({ onClose }: { onClose: () => void }) {
           disabled={!gameStarted || gameOver}
           style={{
             padding: '0',
-            fontSize: '14px',
+            fontSize: '10px',
             minWidth: 'auto',
             width: '56px',
             height: '56px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            fontWeight: 'bold',
           }}
         >
-          {isPaused ? '▶' : '⏸'}
+          {isPaused ? 'PLAY' : 'PAUSE'}
         </button>
         <button
           className="retro-button"
@@ -480,7 +492,7 @@ export function RetroSnakeGame({ onClose }: { onClose: () => void }) {
           disabled={!gameStarted || gameOver}
           style={{
             padding: '0',
-            fontSize: '20px',
+            fontSize: '16px',
             minWidth: 'auto',
             width: '56px',
             height: '56px',
