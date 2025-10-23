@@ -41,7 +41,7 @@ const POPULAR_TAGS = [
 
 export function BillsByTagSearch() {
   const [selectedTag, setSelectedTag] = useState('');
-  const { billIds, isLoading } = useBillsByTag(selectedTag);
+  const { billIds } = useBillsByTag(selectedTag);
 
   return (
     <div className="retro-group">

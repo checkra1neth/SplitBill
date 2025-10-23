@@ -14,7 +14,6 @@ const INITIAL_SPEED = 150;
 export function RetroSnakeGame({ onClose }: { onClose: () => void }) {
   const [snake, setSnake] = useState<Position[]>([{ x: 10, y: 10 }]);
   const [food, setFood] = useState<Position>({ x: 15, y: 15 });
-  const [isInitialized, setIsInitialized] = useState(false);
   const [direction, setDirection] = useState<'UP' | 'DOWN' | 'LEFT' | 'RIGHT'>('RIGHT');
   const [gameOver, setGameOver] = useState(false);
   const [score, setScore] = useState(0);
@@ -43,7 +42,6 @@ export function RetroSnakeGame({ onClose }: { onClose: () => void }) {
     const saved = localStorage.getItem('snakeHighScore');
     if (saved) setHighScore(parseInt(saved));
     setFood(generateFood([{ x: 10, y: 10 }]));
-    setIsInitialized(true);
   }, [generateFood]);
 
   // Game logic
@@ -400,7 +398,7 @@ export function RetroSnakeGame({ onClose }: { onClose: () => void }) {
             <div style={{ fontSize: '14px', fontWeight: 'bold' }}>SNAKE GAME</div>
             <div style={{ fontSize: '10px', textAlign: 'center', lineHeight: '1.4', maxWidth: '200px' }}>
               Eat the red dots to grow!<br />
-              Don't hit walls or yourself
+              Don&apos;t hit walls or yourself
             </div>
             <button onClick={startGame} className="retro-button" style={{ fontSize: '12px', padding: '8px 16px' }}>
               START GAME

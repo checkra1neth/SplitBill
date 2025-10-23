@@ -23,7 +23,7 @@ export function RetroMenuBar({ onNewBill }: MenuBarProps) {
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
   const menuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
-  const { address, isConnected } = useAccount();
+  const { isConnected } = useAccount();
   const { open } = useAppKit();
   const { showToast } = useToast();
 
