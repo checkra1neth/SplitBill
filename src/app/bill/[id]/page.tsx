@@ -31,6 +31,11 @@ import { useEscrowBillInfo } from '@/features/payment/hooks/useEscrowBillData';
 import QRCode from 'react-qr-code';
 import { RetroConfirmDialog } from '@/components/RetroConfirmDialog';
 import { AppKitButton } from '@/components/AppKitButton';
+import { FaGithub, FaTelegram } from 'react-icons/fa';
+import { FaXTwitter } from 'react-icons/fa6';
+import { SiFarcaster, SiDevdotto } from 'react-icons/si';
+import { RiNftFill } from 'react-icons/ri';
+import { ClientTime } from '@/components/ClientTime';
 
 export default function BillPage() {
   const params = useParams();
@@ -964,6 +969,92 @@ export default function BillPage() {
         }}
         onCancel={() => setConfirmDialog({ isOpen: false, participantId: '', participantName: '' })}
       />
+
+      {/* Taskbar */}
+      <div className="retro-taskbar" style={{
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        display: 'flex',
+        alignItems: 'center',
+        gap: '4px',
+        padding: '2px 4px',
+        height: '28px',
+        overflow: 'hidden'
+      }}>
+        <button
+          className="retro-start-button"
+          style={{
+            height: '24px',
+            border: '2px outset #ffffff',
+          }}
+          onClick={() => router.push('/')}
+        >
+          <span>← Home</span>
+        </button>
+
+        {/* Social Links */}
+        <div style={{ display: 'flex', gap: '2px', marginLeft: '4px' }}>
+          <a href="https://github.com/checkra1neth" target="_blank" rel="noopener noreferrer" title="GitHub" className="retro-taskbar-icon" style={{ width: '22px', height: '22px' }}>
+            <FaGithub size={12} />
+          </a>
+          <a href="https://x.com/checkra1neth" target="_blank" rel="noopener noreferrer" title="X/Twitter" className="retro-taskbar-icon" style={{ width: '22px', height: '22px' }}>
+            <FaXTwitter size={12} />
+          </a>
+          <a href="https://farcaster.xyz/checkra1n.eth" target="_blank" rel="noopener noreferrer" title="Farcaster" className="retro-taskbar-icon" style={{ width: '22px', height: '22px' }}>
+            <SiFarcaster size={12} />
+          </a>
+          <a href="https://zora.co/@checkra1n" target="_blank" rel="noopener noreferrer" title="Zora" className="retro-taskbar-icon" style={{ width: '22px', height: '22px' }}>
+            <RiNftFill size={12} />
+          </a>
+          <a href="https://t.me/suncrypt_org" target="_blank" rel="noopener noreferrer" title="Telegram" className="retro-taskbar-icon" style={{ width: '22px', height: '22px' }}>
+            <FaTelegram size={12} />
+          </a>
+          <a href="https://devfolio.co/@checkra1n" target="_blank" rel="noopener noreferrer" title="Devfolio" className="retro-taskbar-icon" style={{ width: '22px', height: '22px' }}>
+            <SiDevdotto size={12} />
+          </a>
+        </div>
+
+        <div style={{ flex: 1 }} />
+
+        {/* Built on Base */}
+        <a
+          href="https://base.org"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            padding: '2px 6px',
+            textDecoration: 'none',
+            fontSize: '9px',
+            fontFamily: 'monospace',
+            color: '#000000',
+            background: '#c0c0c0',
+            border: '1px inset #808080',
+            boxShadow: 'inset 1px 1px 1px rgba(0,0,0,0.2)',
+            letterSpacing: '0.3px',
+            height: '20px',
+          }}
+        >
+          <span style={{ fontSize: '8px', color: '#666', fontStyle: 'italic' }}>built on</span>
+          <span style={{
+            background: '#0052ff',
+            color: '#ffffff',
+            padding: '1px 4px',
+            fontWeight: 'bold',
+            fontSize: '9px',
+          }}>
+            BASE
+          </span>
+        </a>
+
+        <div className="retro-status-panel" style={{ minWidth: '70px', textAlign: 'center', height: '20px', lineHeight: '20px', fontSize: '10px' }}>
+          <ClientTime format="short" />
+        </div>
+      </div>
     </div>
   );
 }
