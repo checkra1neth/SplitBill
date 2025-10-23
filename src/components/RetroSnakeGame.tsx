@@ -20,9 +20,11 @@ export function RetroSnakeGame({ onClose }: { onClose: () => void }) {
   const [score, setScore] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [highScore, setHighScore] = useState(0);
+  const [gameStarted, setGameStarted] = useState(false);
   
   const directionRef = useRef(direction);
   const gameLoopRef = useRef<NodeJS.Timeout | null>(null);
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
 
   // Generate random food position
   const generateFood = useCallback((currentSnake: Position[]) => {
@@ -103,18 +105,37 @@ export function RetroSnakeGame({ onClose }: { onClose: () => void }) {
 
   // Game loop
   useEffect(() => {
-    if (!gameOver && !isPaused) {
+    if (gameStarted && !gameOver && !isPaused) {
       gameLoopRef.current = setInterval(moveSnake, INITIAL_SPEED);
       return () => {
         if (gameLoopRef.current) clearInterval(gameLoopRef.current);
       };
     }
-  }, [moveSnake, gameOver, isPaused]);
+  }, [gameStarted, moveSnake, gameOver, isPaused]);
+
+  // Change direction helper
+  const changeDirection = useCallback((newDir: 'UP' | 'DOWN' | 'LEFT' | 'RIGHT') => {
+    if (gameOver || !gameStarted) return;
+    
+    const canChange = (() => {
+      switch (newDir) {
+        case 'UP': return directionRef.current !== 'DOWN';
+        case 'DOWN': return directionRef.current !== 'UP';
+        case 'LEFT': return directionRef.current !== 'RIGHT';
+        case 'RIGHT': return directionRef.current !== 'LEFT';
+      }
+    })();
+
+    if (canChange) {
+      directionRef.current = newDir;
+      setDirection(newDir);
+    }
+  }, [gameOver, gameStarted]);
 
   // Keyboard controls
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
-      if (gameOver) return;
+      if (gameOver || !gameStarted) return;
 
       if (e.key === ' ') {
         e.preventDefault();
@@ -127,33 +148,82 @@ export function RetroSnakeGame({ onClose }: { onClose: () => void }) {
           case 'ArrowUp':
           case 'w':
           case 'W':
-            return directionRef.current !== 'DOWN' ? 'UP' : directionRef.current;
+            return 'UP';
           case 'ArrowDown':
           case 's':
           case 'S':
-            return directionRef.current !== 'UP' ? 'DOWN' : directionRef.current;
+            return 'DOWN';
           case 'ArrowLeft':
           case 'a':
           case 'A':
-            return directionRef.current !== 'RIGHT' ? 'LEFT' : directionRef.current;
+            return 'LEFT';
           case 'ArrowRight':
           case 'd':
           case 'D':
-            return directionRef.current !== 'LEFT' ? 'RIGHT' : directionRef.current;
+            return 'RIGHT';
           default:
-            return directionRef.current;
+            return null;
         }
       })();
 
-      if (newDirection !== directionRef.current) {
-        directionRef.current = newDirection;
-        setDirection(newDirection);
+      if (newDirection) {
+        changeDirection(newDirection);
       }
     };
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [gameOver]);
+  }, [gameOver, gameStarted, changeDirection]);
+
+  // Touch controls for mobile
+  useEffect(() => {
+    const handleTouchStart = (e: TouchEvent) => {
+      const touch = e.touches[0];
+      touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      if (!touchStartRef.current || !gameStarted || gameOver) return;
+
+      const touch = e.changedTouches[0];
+      const deltaX = touch.clientX - touchStartRef.current.x;
+      const deltaY = touch.clientY - touchStartRef.current.y;
+      const minSwipeDistance = 30;
+
+      if (Math.abs(deltaX) > Math.abs(deltaY)) {
+        // Horizontal swipe
+        if (Math.abs(deltaX) > minSwipeDistance) {
+          changeDirection(deltaX > 0 ? 'RIGHT' : 'LEFT');
+        }
+      } else {
+        // Vertical swipe
+        if (Math.abs(deltaY) > minSwipeDistance) {
+          changeDirection(deltaY > 0 ? 'DOWN' : 'UP');
+        }
+      }
+
+      touchStartRef.current = null;
+    };
+
+    window.addEventListener('touchstart', handleTouchStart);
+    window.addEventListener('touchend', handleTouchEnd);
+    return () => {
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [gameStarted, gameOver, changeDirection]);
+
+  const startGame = () => {
+    const initialSnake = [{ x: 10, y: 10 }];
+    setSnake(initialSnake);
+    setFood(generateFood(initialSnake));
+    setDirection('RIGHT');
+    directionRef.current = 'RIGHT';
+    setGameOver(false);
+    setScore(0);
+    setIsPaused(false);
+    setGameStarted(true);
+  };
 
   const resetGame = () => {
     const initialSnake = [{ x: 10, y: 10 }];
@@ -164,6 +234,7 @@ export function RetroSnakeGame({ onClose }: { onClose: () => void }) {
     setGameOver(false);
     setScore(0);
     setIsPaused(false);
+    setGameStarted(true);
   };
 
   return (
@@ -286,7 +357,7 @@ export function RetroSnakeGame({ onClose }: { onClose: () => void }) {
         )}
 
         {/* Pause overlay */}
-        {isPaused && !gameOver && (
+        {isPaused && !gameOver && gameStarted && (
           <div
             style={{
               position: 'absolute',
@@ -306,6 +377,116 @@ export function RetroSnakeGame({ onClose }: { onClose: () => void }) {
             PAUSED
           </div>
         )}
+
+        {/* Start screen */}
+        {!gameStarted && (
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'rgba(0, 0, 0, 0.9)',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#ffffff',
+              gap: '16px',
+            }}
+          >
+            <div style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '8px' }}>🐍</div>
+            <div style={{ fontSize: '14px', fontWeight: 'bold' }}>SNAKE GAME</div>
+            <div style={{ fontSize: '10px', textAlign: 'center', lineHeight: '1.4', maxWidth: '200px' }}>
+              Eat the red dots to grow!<br />
+              Don't hit walls or yourself
+            </div>
+            <button onClick={startGame} className="retro-button" style={{ fontSize: '12px', padding: '8px 16px' }}>
+              START GAME
+            </button>
+            <div style={{ fontSize: '9px', color: '#999', marginTop: '8px' }}>
+              High Score: {highScore}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Mobile controls */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(3, 1fr)',
+          gap: '4px',
+          marginTop: '12px',
+          maxWidth: '180px',
+          margin: '12px auto 0',
+        }}
+      >
+        <div />
+        <button
+          className="retro-button"
+          onClick={() => changeDirection('UP')}
+          disabled={!gameStarted || gameOver}
+          style={{
+            padding: '12px',
+            fontSize: '16px',
+            minWidth: 'auto',
+          }}
+        >
+          ▲
+        </button>
+        <div />
+        <button
+          className="retro-button"
+          onClick={() => changeDirection('LEFT')}
+          disabled={!gameStarted || gameOver}
+          style={{
+            padding: '12px',
+            fontSize: '16px',
+            minWidth: 'auto',
+          }}
+        >
+          ◄
+        </button>
+        <button
+          className="retro-button"
+          onClick={() => setIsPaused(prev => !prev)}
+          disabled={!gameStarted || gameOver}
+          style={{
+            padding: '12px',
+            fontSize: '10px',
+            minWidth: 'auto',
+          }}
+        >
+          {isPaused ? '▶' : '⏸'}
+        </button>
+        <button
+          className="retro-button"
+          onClick={() => changeDirection('RIGHT')}
+          disabled={!gameStarted || gameOver}
+          style={{
+            padding: '12px',
+            fontSize: '16px',
+            minWidth: 'auto',
+          }}
+        >
+          ►
+        </button>
+        <div />
+        <button
+          className="retro-button"
+          onClick={() => changeDirection('DOWN')}
+          disabled={!gameStarted || gameOver}
+          style={{
+            padding: '12px',
+            fontSize: '16px',
+            minWidth: 'auto',
+          }}
+        >
+          ▼
+        </button>
+        <div />
       </div>
 
       {/* Controls info */}
@@ -318,8 +499,9 @@ export function RetroSnakeGame({ onClose }: { onClose: () => void }) {
           lineHeight: '1.4',
         }}
       >
-        <div>🎮 Use Arrow Keys or WASD to move</div>
-        <div>⏸️ Press SPACE to pause</div>
+        <div>🎮 Keyboard: Arrow Keys / WASD</div>
+        <div>📱 Mobile: Swipe or use buttons</div>
+        <div>⏸️ Press SPACE or ⏸ to pause</div>
         <div style={{ marginTop: '4px', fontStyle: 'italic' }}>
           💡 Easter egg: Found the secret game!
         </div>
