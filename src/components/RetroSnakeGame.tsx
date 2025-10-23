@@ -429,9 +429,14 @@ export function RetroSnakeGame({ onClose }: { onClose: () => void }) {
           onClick={() => changeDirection('UP')}
           disabled={!gameStarted || gameOver}
           style={{
-            padding: '12px',
-            fontSize: '16px',
+            padding: '0',
+            fontSize: '20px',
             minWidth: 'auto',
+            width: '56px',
+            height: '56px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
         >
           ▲
@@ -442,21 +447,31 @@ export function RetroSnakeGame({ onClose }: { onClose: () => void }) {
           onClick={() => changeDirection('LEFT')}
           disabled={!gameStarted || gameOver}
           style={{
-            padding: '12px',
-            fontSize: '16px',
+            padding: '0',
+            fontSize: '20px',
             minWidth: 'auto',
+            width: '56px',
+            height: '56px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
         >
-          ◄
+          ◀
         </button>
         <button
           className="retro-button"
           onClick={() => setIsPaused(prev => !prev)}
           disabled={!gameStarted || gameOver}
           style={{
-            padding: '12px',
-            fontSize: '10px',
+            padding: '0',
+            fontSize: '14px',
             minWidth: 'auto',
+            width: '56px',
+            height: '56px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
         >
           {isPaused ? '▶' : '⏸'}
@@ -466,12 +481,17 @@ export function RetroSnakeGame({ onClose }: { onClose: () => void }) {
           onClick={() => changeDirection('RIGHT')}
           disabled={!gameStarted || gameOver}
           style={{
-            padding: '12px',
-            fontSize: '16px',
+            padding: '0',
+            fontSize: '20px',
             minWidth: 'auto',
+            width: '56px',
+            height: '56px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
         >
-          ►
+          ▶
         </button>
         <div />
         <button
@@ -479,9 +499,14 @@ export function RetroSnakeGame({ onClose }: { onClose: () => void }) {
           onClick={() => changeDirection('DOWN')}
           disabled={!gameStarted || gameOver}
           style={{
-            padding: '12px',
-            fontSize: '16px',
+            padding: '0',
+            fontSize: '20px',
             minWidth: 'auto',
+            width: '56px',
+            height: '56px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
         >
           ▼
